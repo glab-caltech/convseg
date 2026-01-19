@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="Kyvo">
+  <meta name="keywords" content="3D Structured Language, Cookbook">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Aligning Text, Images, and 3D Structure Token-by-Token</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <!-- Bulma and other CSS -->
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/kyvo.png">
+
+  <!-- jQuery & Plotly -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.9.0.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+
+  <!-- ──────────────────────────────────────────────────── -->
+  <!--  ✨ Extra styles (mobile‑first + logo animation) ✨  -->
+  <!-- ──────────────────────────────────────────────────── -->
+  <style>
+    /* 1️⃣  Generic responsive helpers  */
+    img,
+    video {
+      max-width: 100%;
+      height: auto;
+    }
+
+    pre {
+      overflow-x: auto;
+      /* horizontal scroll on small screens */
+      white-space: pre-wrap;
+      /* allow wrapping if needed */
+      word-break: break-word;
+    }
+
+    #x-slider {
+      width: 100% !important;
+    }
+
+    .image.is-square {
+      height: auto;
+      /* override Bulma on mobile */
+    }
+
+    /* 2️⃣  Flying Kyvo Logo  */
+    .hero {
+      position: relative;
+      /* containing block for absolute‑positioned logo */
+    }
+
+    .kyvo-logo-fly {
+      position: absolute;
+      width: 120px;
+      top: 50px;
+      right: 150px;
+      animation: fly 12s ease-in-out infinite;
+      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.25));
+      transition: transform 0.3s;
+      cursor: pointer;
+    }
+
+    .kyvo-logo-fly:hover {
+      transform: scale(1.1) rotate(10deg);
+    }
+
+    @keyframes fly {
+      0% {
+        transform: translate(-30px, 0) rotate(0deg);
+      }
+
+      25% {
+        transform: translate(10px, -20px) rotate(12deg);
+      }
+
+      50% {
+        transform: translate(35px, 10px) rotate(-8deg);
+      }
+
+      75% {
+        transform: translate(-10px, 20px) rotate(6deg);
+      }
+
+      100% {
+        transform: translate(-30px, 0) rotate(0deg);
+      }
+    }
+
+    /* Pop‑spin on click */
+    @keyframes pop {
+      0% {
+        transform: scale(1) rotate(0deg);
+      }
+
+      50% {
+        transform: scale(1.4) rotate(360deg);
+      }
+
+      100% {
+        transform: scale(1) rotate(720deg);
+      }
+    }
+
+    .kyvo-logo-fly.clicked {
+      animation: pop 1.2s ease-out forwards;
+      /* doubled duration */
+    }
+
+    /* 3️⃣  Mobile‑specific tweaks with media queries */
+    @media (max-width: 768px) {
+      h1.publication-title {
+        font-size: 1.75rem;
+        /* smaller headline */
+        line-height: 1.2;
+      }
+
+      .kyvo-logo-fly {
+        width: 80px;
+        /* shrink logo */
+        top: 16px;
+        right: 16px;
+      }
+
+      .title.is-3 {
+        font-size: 1.35rem;
+      }
+
+      .title.is-4 {
+        font-size: 1.25rem;
+      }
+
+      .box.object-row {
+        padding: 0.5rem;
+        /* tighter boxes */
+      }
+
+      /* Allow the two‑column interactive demo to stack sooner */
+      #interactive-demo .columns.is-desktop {
+        display: block;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ===================== HERO / TITLE ===================== -->
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered" style="position: relative;">
+            <h1 class="title is-1 publication-title">
+              Aligning Text, Images, and 3D Structure Token-by-Token
+            </h1>
+            <!-- ✈️ The cute flying Kyvo logo -->
+            <img src="./static/images/kyvo.png" alt="Kyvo Logo" class="kyvo-logo-fly" />
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">
+                <a href="https://aadsah.github.io/" target="_blank" rel="noopener noreferrer">Aadarsh Sahoo</a>,</span>
+              <span class="author-block">
+                <a href="https://vanshtibrewal.github.io/" target="_blank" rel="noopener noreferrer">Vansh
+                  Tibrewal</a>,</span>
+              <span class="author-block">
+                <a href="https://gkioxari.github.io/" target="_blank" rel="noopener noreferrer">Georgia
+                  Gkioxari</a></span>
+            </div>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">Caltech</span>
+            </div>
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <!-- Paper -->
+                <span class="link-block">
+                  <a href="https://arxiv.org/pdf/2506.08002" class="button is-normal is-rounded is-link is-light">
+                    <span class="icon"><i class="fas fa-file-pdf"></i></span>
+                    <span>Paper</span>
+                  </a>
+                </span>
+
+                <!-- arXiv -->
+                <span class="link-block">
+                  <a href="https://arxiv.org/abs/2506.08002" class="button is-normal is-rounded is-link is-light">
+                    <span class="icon"><i class="ai ai-arxiv"></i></span>
+                    <span>arXiv</span>
+                  </a>
+                </span>
+                <!-- Code -->
+                <span class="link-block">
+                  <a href="https://github.com/AadSah/kyvo" class="button is-normal is-rounded is-link is-light">
+                    <span class="icon"><i class="fab fa-github"></i></span>
+                    <span>Code</span>
+                  </a>
+                </span>
+
+                <!-- Dataset -->
+                <span class="link-block">
+                  <a href="https://huggingface.co/datasets/aadarsh99/kyvo-datasets-and-codebooks"
+                    class="button is-normal is-rounded is-link is-light">
+                    <span class="icon">
+                      <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg"
+                        alt="huggingface logo" style="height:1em;">
+                    </span>
+                    <span>Dataset</span>
+                  </a>
+                </span>
+
+                <!-- Interactive Demo (updated) -->
+                <span class="link-block">
+                  <a href="#interactive-rendering-demos" class="button is-normal is-rounded is-link is-light">
+                    <span class="icon"><i class="fas fa-play-circle"></i></span>
+                    <span>Demo</span>
+                  </a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="content has-text-centered">
+          <p>
+            <b>tl;dr</b> We propose a unified LLM framework that aligns language, images, and structured 3D scenes to
+            perform core 3D tasks.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="teaser video">
+    <div class="container is-max-desktop">
+      <div class="teaser-body">
+        <!-- Make video responsive by removing fixed height and letting max-width handle it -->
+        <video id="teaser" autoplay muted loop playsinline style="max-width:100%; height:auto;">
+          <source src="static/videos/webpage-video.mov" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              Creating machines capable of understanding the world in 3D is essential in assisting designers that build
+              and edit 3D environments and robots navigating and interacting within a three-dimensional space. Inspired
+              by advances in language and image modeling, we investigate the potential of autoregressive models for a
+              new modality: structured 3D scenes. To this end, we propose a unified LLM framework that aligns language,
+              images, and 3D scenes and provide a detailed ''cookbook'' outlining critical design choices for achieving
+              optimal training and performance addressing key questions related to data representation,
+              modality-specific objectives, and more. We evaluate performance across four core 3D tasks – rendering,
+              recognition, instruction-following, and question-answering – and four 3D datasets, synthetic and
+              real-world. We extend our approach to reconstruct complex 3D object shapes by enriching our 3D modality
+              with quantized shape encodings, and show our model's effectiveness on real-world 3D object recognition
+              tasks.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Approach</h2>
+          <div class="content has-text-justified">
+            <p>
+              <b>Kyvo:</b> a decoder-only transformer aligns a structured 3D modality with language and vision.
+              This 3D modality represents scenes as lists of objects, each defined by its 3D shape, type, 3D position,
+              pose and size parameters. Kyvo unifies the token space of images, text, and 3D to enable a variety of
+              complex visual 3D tasks.
+            </p>
+            <!-- Make images responsive -->
+            <img src="static/images/teaser.png" alt="Approach" style="max-width:100%; height:auto;">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="reconstruction-video">
+    <div class="container is-max-desktop">
+      <!-- add horizontal line -->
+      <hr>
+      <h3 class="title is-3 has-text-centered">Unified Shape and Scene Reconstruction</h3>
+      <div class="content has-text-centered">
+        <p>
+          From a single image, Kyvo reconstructs 3D object shape and layout.
+        </p>
+      </div>
+      <div class="reconstruction-video">
+        <!-- Make video responsive by removing fixed height and letting max-width handle it -->
+        <video id="reconstruction-video" autoplay muted loop playsinline style="max-width:100%; height:auto;">
+          <source src="static/videos/reconstruction-video.mov" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </section>
+
+  <section class="rendering-video">
+    <div class="container is-max-desktop">
+      <!-- add horizontal line -->
+      <hr>
+      <h3 class="title is-3 has-text-centered">Shape and Scene Rendering</h3>
+      <div class="content has-text-centered">
+        <p>
+          Given 3D assets and the desired 3D location and pose, Kyvo predicts the image autoregressively.
+        </p>
+      </div>
+      <div class="rendering-video">
+        <!-- Make video responsive by removing fixed height and letting max-width handle it -->
+        <video id="rendering-video" autoplay muted loop playsinline style="max-width:100%; height:auto;">
+          <source src="static/videos/rendering-video.mov" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <hr>
+          <h2 class="title is-3">Qualitative Examples</h2>
+          <div class="tabs is-boxed is-centered is-medium" id="tabs">
+            <ul>
+              <li data-tab="reconstruction-objaworld" class="is-active"><a>Reconstruction - ObjaWorld</a></li>
+              <li data-tab="rendering-objaworld"><a>Rendering - ObjaWorld</a></li>
+              <li data-tab="rendering-clevr"><a>Rendering - CLEVR</a></li>
+              <li data-tab="recognition"><a>Recognition - ObjaWorld</a></li>
+              <li data-tab="question-answering"><a>Question-Answering - CLEVR</a></li>
+            </ul>
+          </div>
+          <div class="columns is-centered has-text-left"></div>
+          <div id="tabs-content">
+            <!-- Rendering (CLEVR) -->
+            <div data-content="rendering-clevr" class="tab-content content">
+              <div class="columns is-centered has-text-left">
+                <div class="column is-two-thirds content">
+                  Example image generations for the rendering task on CLEVR. The model takes a 3D scene as input and
+                  produces a corresponding image. Additionally, we show the ground-truth image rendered using Blender.
+                </div>
+              </div>
+              <figure class="image">
+                <img src="static/images/app-rendering-examples-clevr.png" style="max-width:100%; height:auto;">
+              </figure>
+            </div>
+            <!-- Reconstruction (ObjaWorld) -->
+            <div data-content="reconstruction-objaworld" class="tab-content is-active content">
+              <div class="columns is-centered has-text-left">
+                <div class="column is-two-thirds content">
+                  Given a single input image, Kyvo predicts shape sequences and reconstructs individual objects (bottle,
+                  cheeseburger, etc.) along with their 3D locations and poses via our structured 3D modality,
+                  effectively reconstructing the 3D scene with consistent spatial relations between the objects,
+                  visualized using Blender.
+                </div>
+              </div>
+              <figure class="image">
+                <img src="static/images/appendix-images-to-scenes-examples-1.png" style="max-width:100%; height:auto;">
+              </figure>
+              <figure class="image">
+                <img src="static/images/appendix-images-to-scenes-examples-2.png" style="max-width:100%; height:auto;">
+              </figure>
+            </div>
+            <!-- Rendering (ObjaWorld) -->
+            <div data-content="rendering-objaworld" class="tab-content content">
+              <div class="columns is-centered has-text-left">
+                <div class="column is-two-thirds content">
+                  Example image generations for the rendering task on ObjaWorld. The model takes a 3D scene with
+                  embedded shape encodings as input and produces a corresponding image. Additionally, we show the
+                  ground-truth image rendered using Blender.
+                </div>
+              </div>
+              <figure class="image">
+                <img src="static/images/appendix-scene-to-images-examples.png" style="max-width:100%; height:auto;">
+              </figure>
+              <div class="columns is-centered has-text-left">
+                <div class="column is-two-thirds content">
+                  Example image generations for the rendering task on ObjaWorld. The model takes a 3D scene as input and
+                  produces a corresponding image. Additionally, we show the ground-truth image rendered using Blender.
+                </div>
+              </div>
+              <figure class="image">
+                <img src="static/images/app-rendering-examples-objaworld.png" style="max-width:100%; height:auto;">
+              </figure>
+            </div>
+            <!-- Recognition -->
+            <div data-content="recognition" class="tab-content content">
+              <div class="columns is-centered has-text-left">
+                <div class="column is-two-thirds content">
+                  Two example predictions from the recognition task on ObjaWorld. The colored numbers indicate object
+                  matching between the predicted and ground-truth scenes, based on the criteria for Jaccard Index as
+                  defined in Algorithm 1 in the paper.
+                </div>
+              </div>
+              <figure class="image">
+                <img src="static/images/app-recognition-examples-clevr.png" style="max-width:100%; height:auto;">
+              </figure>
+            </div>
+            <!-- Question-Answering -->
+            <div data-content="question-answering" class="tab-content content">
+              <div class="columns is-centered has-text-left">
+                <div class="column is-two-thirds content">
+                  Example cases from the question-answering task on CLEVR. The model takes an image, a 3D scene, and a
+                  question as input to generate the corresponding answer.
+                </div>
+              </div>
+              <figure class="image">
+                <img src="static/images/app-qa-examples-clevr.png" style="max-width:100%; height:auto;">
+              </figure>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <hr>
+          <h2 id="interactive-rendering-demos" class="title is-3">Interactive Rendering Demos</h2>
+          <div class="content has-text-justified">
+            <p>
+              Below is a JSON panel with exactly <b>3 objects</b>. Each object has a fixed <code>xy-coords</code>, but
+              you can change its
+              <code>shape</code> to <code>balloon</code>, <code>barrel</code>, <code>vase</code>, <code>bottle</code>,
+              or <code>basketball</code>.
+              Click <b>"Generate"</b> to retrieve a corresponding pre-computed ObjaWorld image.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================= NEW ObjaWorld Interactive Demo ======================= -->
+      <!-- Insert this block **right before** the existing <div class="box" id="interactive-demo"> -->
+      <div class="box" id="interactive-demo-objaworld" style="margin-top: 2rem;">
+        <div class="columns">
+          <!-- ───────── Left Column: Editable Scene Objects ───────── -->
+          <div class="column is-half has-text-left" style="border-right: 1px solid #ddd;">
+            <h3 class="title is-4 has-text-centered">ObjaWorld Scene Objects</h3>
+
+            <!-- Helper for building the <pre> rows -->
+            <script>
+              /**
+               * Inject one object‑row. Keeps the HTML shorter and avoids unmatched quotes inside <pre>.
+               * @param {number} index 0‑based index of the object.
+               * @param {string} xyCoords Frozen coordinate string (already wrapped in parentheses)
+               */
+              function addObjaworldRow(index, xyCoords) {
+                const container = document.createElement('div');
+                container.className = 'box object-row objaworld-object';
+                container.style.cssText = 'margin-bottom:0.75rem;padding:0.75rem;';
+                container.setAttribute('data-xy', xyCoords);
+
+                // Build the inner HTML – no extra quotes around <select> so the DOM stays valid
+                container.innerHTML = `
+<pre style="font-family: monospace; white-space: pre; margin: 0; font-size: 1.2rem;">
+<span style="color:#999;">{</span>
+    <span style="color:#2b6cb0;">"shape"</span>: <select class="objaworld-shape param-shape" data-index="${index}" style="border:none;background:transparent;outline:none;font-size:1.2rem;color: #c53030;">
+      <option value="balloon">balloon</option>
+      <option value="barrel">barrel</option>
+      <option value="vase">vase</option>
+      <option value="bottle">bottle</option>
+      <option value="basketball">basketball</option>
+    </select>,
+    <span style="color:#2b6cb0;">"xy-coords"</span>: <span style="color:#000;">"${xyCoords}"</span>
+<span style="color:#999;">}</span>
+</pre>`;
+                document.getElementById('objaworld-left-col').appendChild(container);
+              }
+            </script>
+
+            <!-- Wrapper where rows will be injected -->
+            <div id="objaworld-left-col"></div>
+
+            <!-- Generate Button (centered) -->
+            <div class="field has-text-centered" style="margin-top: 1rem;">
+              <p class="control" style="display:inline-block;">
+                <button id="objaworld-generate-btn" class="button is-primary">
+                  <span class="icon"><i class="fas fa-magic"></i></span>
+                  <span>Generate</span>
+                </button>
+              </p>
+            </div>
+
+            <script>
+              // Add the three object rows (coordinates frozen)
+              addObjaworldRow(0, '(-1.90,-2.45)');
+              addObjaworldRow(1, '(-1.55,1.00)');
+              addObjaworldRow(2, '(2.75,0.30)');
+            </script>
+          </div>
+
+          <!-- ───────── Right Column: Generated Image Only ───────── -->
+          <div class="column is-half is-flex is-flex-direction-column is-align-items-center is-justify-content-center">
+            <h3 class="title is-4 has-text-centered">Generated Image (Kyvo)</h3>
+            <div style="border: 1px solid #ddd; border-radius: 6px; padding: 0rem; max-width: 85%; width:100%;">
+              <figure class="image is-square is-flex is-align-items-center is-justify-content-center"
+                style="background:#f5f5f5; position:relative; height:100%;">
+                <img id="objaworld-generated-img" src="static/images/kyvo.png" alt="Generated Output"
+                  style="display:block; max-width:100%; height:auto; margin:auto;">
+                <!-- Spinner -->
+                <div id="objaworld-loading-indicator"
+                  style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);">
+                  <span class="icon is-large"><i class="fas fa-spinner fa-pulse fa-3x"></i></span>
+                </div>
+              </figure>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <div class="content has-text-justified">
+            <p>
+              Below is a JSON panel with exactly <b>3 objects</b>. The first and third are <b>read-only</b>, and you can
+              only modify the <b>middle object</b>. Choose <code>shape</code>, <code>material</code>,
+              <code>color</code>, and <code>size</code> for the second object. The <code>3d-coords</code> are fixed.
+              Click <b>"Generate"</b> to retrieve a corresponding precomputed image.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="box" id="interactive-demo" style="margin-top: 2rem;">
+        <div class="columns">
+          <!-- Left Column: The 3 Objects -->
+          <div class="column is-half has-text-centered" style="border-right: 1px solid #ddd;">
+            <h3 class="title is-4">Scene Objects (Modify the middle one)</h3>
+
+            <!-- Static Object #1 -->
+            <div class="box object-row static-object" data-shape="cube" data-material="metal" data-color="yellow"
+              data-size="large" style="margin-bottom: 0.75rem; padding: 0.75rem;">
+              <pre style="font-family: monospace; white-space: pre; margin: 0; font-size: 1.2rem;">
+<span style="color: #999;">{</span>
+    <span style="color: #2b6cb0;">"shape"</span>: <span style="color: #000000;">"sphere"</span>,
+    <span style="color: #2b6cb0;">"material"</span>: <span style="color: #000000;">"metal"</span>,
+    <span style="color: #2b6cb0;">"color"</span>: <span style="color: #000000;">"red"</span>,
+    <span style="color: #2b6cb0;">"size"</span>: <span style="color: #000000;">"large"</span>,
+    <span style="color: #2b6cb0;">"xy-coords"</span>: <span style="color: #000000;">"(-1.60,-2.20)"</span>
+<span style="color: #999;">}</span>
+</pre>
+            </div>
+
+            <!-- Dynamic Object #2 (modifiable) -->
+            <div class="box object-row dynamic-object"
+              style="margin-bottom: 0.75rem; padding: 0.75rem; position: relative;">
+              <pre style="font-family: monospace; white-space: pre; margin: 0; font-size: 1.2rem;">
+<span style="color: #999;">{</span>
+    <span style="color: #2b6cb0;">"shape"</span>: <span style="color: #c53030;">"<select class="param-shape" style="display: inline; color: #c53030; border: none; background: transparent; outline: none; font-size: 1.2rem; text-align-last: center;">
+      <option value="sphere">sphere</option>
+      <option value="cube">cube</option>
+      <option value="cylinder">cylinder</option>
+    </select>"</span>,
+    <span style="color: #2b6cb0;">"material"</span>: <span style="color: #c53030;">"<select class="param-material" style="display: inline; color: #c53030; border: none; background: transparent; outline: none; font-size: 1.2rem; text-align-last: center;">
+      <option value="metal">metal</option>
+      <option value="rubber">rubber</option>
+    </select>"</span>,
+    <span style="color: #2b6cb0;">"color"</span>: <span style="color: #c53030;">"<select class="param-color" style="display: inline; color: #c53030; border: none; background: transparent; outline: none; font-size: 1.2rem; text-align-last: center;">
+      <option value="red">red</option>
+      <option value="blue">blue</option>
+      <option value="green">green</option>
+      <option value="purple">purple</option>
+      <option value="yellow">yellow</option>
+      <option value="cyan">cyan</option>
+      <option value="brown">brown</option>
+      <option value="gray">gray</option>
+    </select>"</span>,
+    <span style="color: #2b6cb0;">"size"</span>: <span style="color: #c53030;">"<select class="param-size" style="display: inline; color: #c53030; border: none; background: transparent; outline: none; font-size: 1.2rem; text-align-last: center;">
+      <option value="small">small</option>
+      <option value="large">large</option>
+    </select>"</span>,
+    <span style="color: #2b6cb0;">"xy-coords"</span>: <span style="color: #c53030;">"(2.40,-2.35)"</span>
+<span style="color: #999;">}</span>
+</pre>
+            </div>
+
+            <!-- Static Object #3 -->
+            <div class="box object-row static-object" data-shape="sphere" data-material="rubber" data-color="blue"
+              data-size="small" style="margin-bottom: 0.75rem; padding: 0.75rem;">
+              <pre style="font-family: monospace; white-space: pre; margin: 0; font-size: 1.2rem;">
+<span style="color: #999;">{</span>
+    <span style="color: #2b6cb0;">"shape"</span>: <span style="color: #000000;">"cylinder"</span>,
+    <span style="color: #2b6cb0;">"material"</span>: <span style="color: #000000;">"rubber"</span>,
+    <span style="color: #2b6cb0;">"color"</span>: <span style="color: #000000;">"yellow"</span>,
+    <span style="color: #2b6cb0;">"size"</span>: <span style="color: #000000;">"large"</span>,
+    <span style="color: #2b6cb0;">"xy-coords"</span>: <span style="color: #000000;">"(2.75,0.35)"</span>
+<span style="color: #999;">}</span>
+</pre>
+            </div>
+
+            <!-- Generate Button -->
+            <div class="field has-text-centered" style="margin-top: 1rem;">
+              <p class="control">
+                <button id="generate-btn" class="button is-primary">
+                  <span class="icon"><i class="fas fa-magic"></i></span>
+                  <span>Generate</span>
+                </button>
+              </p>
+            </div>
+          </div>
+
+          <!-- Right Column: Generated & Groundtruth Images -->
+          <div class="column is-half">
+            <h3 class="title is-4 has-text-centered">Generated Image (Kyvo)</h3>
+            <div style="border: 1px solid #ddd; border-radius: 6px; padding: 0rem; max-width: 85%; margin: auto;">
+              <figure class="image is-square is-flex is-align-items-center is-justify-content-center"
+                style="background: #f5f5f5; position: relative;">
+                <!-- center default image -->
+                <img id="generated-img" src="static/images/kyvo.png" alt="Generated Output"
+                  style="display:block; max-width:100%; height:auto; margin: auto;">
+                <!-- Spinner (hidden by default) -->
+                <div id="loading-indicator" style="
+                    display: none;
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                  ">
+                  <span class="icon is-large">
+                    <i class="fas fa-spinner fa-pulse fa-3x"></i>
+                  </span>
+                </div>
+              </figure>
+            </div>
+
+            <h3 class="title is-4 has-text-centered">Groundtruth Image (Blender)</h3>
+            <div style="border: 1px solid #ddd; border-radius: 6px; padding: 0rem; max-width: 85%; margin: auto;">
+              <figure class="image is-square is-flex is-align-items-center is-justify-content-center"
+                style="background: #f5f5f5; position: relative;">
+                <img id="groundtruth-img" src="static/images/kyvo.png" alt="Groundtruth Output"
+                  style="display:block; max-width:100%; height:auto; margin: auto;">
+              </figure>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3">Varying the X-coordinate (Rolling Ball Demo)</h2>
+      <div class="content has-text-justified">
+        <p>
+          Below is another interactive demo that lets you vary the <b>x</b>-coordinate from <code>-3.00</code> to
+          <code>+3.00</code> in steps of <code>0.05</code>. For each x value, we display a pair of images:
+          <b>generated</b> vs. <b>groundtruth</b>.
+        </p>
+      </div>
+
+      <!-- Slider control -->
+      <div class="field has-text-centered">
+        <label class="label" style="text-align: center;">X-coordinate value:</label>
+        <div class="control" style="display: inline-block;">
+          <input id="x-slider" class="slider" step="0.05" min="-3.00" max="3.00" value="0.00" type="range"
+            style="vertical-align: middle; width: 100%;">
+          <output id="x-slider-value" style="display: inline-block; margin-left: 0.5rem; vertical-align: middle;">
+            0.00
+          </output>
+        </div>
+      </div>
+
+      <!-- Images side by side -->
+      <div class="columns">
+        <div class="column is-half">
+          <h3 class="title is-4 has-text-centered">Generated Image (Kyvo)</h3>
+          <figure class="image is-square is-flex is-align-items-center is-justify-content-center"
+            style="background: #f5f5f5;">
+            <img id="x-generated-img" src="GENERATED/generated_0.00-sphere-metal-gray-small.png" alt="Generated Output"
+              style="max-width:100%; height:auto;">
+          </figure>
+        </div>
+        <div class="column is-half">
+          <h3 class="title is-4 has-text-centered">Groundtruth Image (Blender)</h3>
+          <figure class="image is-square is-flex is-align-items-center is-justify-content-center"
+            style="background: #f5f5f5;">
+            <img id="x-groundtruth-img" src="BLENDER-GROUNDTRUTH/0.00-sphere-metal-gray-small.png"
+              alt="Groundtruth Output" style="max-width:100%; height:auto;">
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================== -->
+  <!-- 📝  Beautified BibTeX Section                          -->
+  <!-- ====================================================== -->
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-left">BibTeX</h2>
+      <div class="box has-background-light" style="position:relative;">
+        <button id="copy-bibtex" class="button is-small is-link is-light"
+          style="position:absolute; top:0.5rem; right:0.5rem;">
+          <span class="icon"><i class="fas fa-copy"></i></span>
+          <span>Copy</span>
+        </button>
+        <pre class="has-text-left" style="margin-top:1.75rem;"><code class="language-bibtex">@misc{sahoo2025aligningtextimages3d,
+  title={Aligning Text, Images, and 3D Structure Token-by-Token}, 
+  author={Aadarsh Sahoo and Vansh Tibrewal and Georgia Gkioxari},
+  year={2025},
+  eprint={2506.08002},
+  archivePrefix={arXiv},
+  primaryClass={cs.CV},
+  url={https://arxiv.org/abs/2506.08002}, 
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <div id="modal" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+      <div id='plot-loading-div' class="box">
+        Loading...
+      </div>
+      <div id='plot-div'></div>
+    </div>
+    <button class="modal-close is-large" aria-label="close"></button>
+  </div>
+
+  <!-- ======================= JS for the New Demo ======================= -->
+  <script>
+    // Helper to build filename like: "balloon-barrel-basketball.png"
+    function buildObjaworldFilename(shapes) {
+      return shapes.join('-') + '.png';
+    }
+
+    $(document).ready(function () {
+      $('#objaworld-generate-btn').click(function (e) {
+        e.preventDefault();
+        // Collect shapes from the three dropdowns in order
+        const shapes = $('.objaworld-shape').map(function () { return $(this).val(); }).get();
+
+        const fileName = buildObjaworldFilename(shapes);
+        // Use the same folder hierarchy as the existing demos (adjust if your assets live elsewhere)
+        const generatedPath = `./static/objaworld-demo-images/${fileName}`;
+
+        // Spinner logic
+        $('#objaworld-generated-img').hide();
+        $('#objaworld-loading-indicator').show();
+
+        // Small delay so the spinner is visible; replace with real image‑loading callback if desired
+        setTimeout(() => {
+          $('#objaworld-loading-indicator').hide();
+          $('#objaworld-generated-img').attr('src', generatedPath).show();
+        }, 500);
+      });
+    });
+  </script>
+
+  <!-- JavaScript to handle interactivity -->
+  <script>
+    /**
+     * Build the final image filename from the 3 objects.
+     * e.g. "generated_sphere-metal-red-large__cube-rubber-blue-small__sphere-metal-purple-large.png"
+     */
+    function buildImageFilename(objects) {
+      // For example: "generated_sphere-metal-red-large__cube-rubber-blue-small__sphere-metal-purple-large.png"
+      const parts = objects.map(obj => {
+        return `generated_${obj.shape}-${obj.material}-${obj.color}-${obj.size}`;
+      });
+      return parts.join('__') + '.png';
+    }
+
+    $(document).ready(function () {
+      // ------------ FIRST DEMO (Generate Button) ------------
+      $('#generate-btn').click(function (e) {
+        e.preventDefault();
+
+        const staticObj1 = {
+          shape: $('.static-object').eq(0).data('shape'),
+          material: $('.static-object').eq(0).data('material'),
+          color: $('.static-object').eq(0).data('color'),
+          size: $('.static-object').eq(0).data('size')
+        };
+        const dynamicObj2 = {
+          shape: $('.dynamic-object .param-shape').val(),
+          material: $('.dynamic-object .param-material').val(),
+          color: $('.dynamic-object .param-color').val(),
+          size: $('.dynamic-object .param-size').val()
+        };
+        const staticObj3 = {
+          shape: $('.static-object').eq(1).data('shape'),
+          material: $('.static-object').eq(1).data('material'),
+          color: $('.static-object').eq(1).data('color'),
+          size: $('.static-object').eq(1).data('size')
+        };
+
+        // If you want the final filename to incorporate all 3 objects, do so here:
+        // const objects = [staticObj1, dynamicObj2, staticObj3];
+        // For the example, we’re only using the dynamic object:
+        const objects = [dynamicObj2];
+
+        const fileName = buildImageFilename(objects);
+
+        // Construct the paths:
+        const generatedPath = './static/demo-images/' + fileName;
+        // Example: "generated_sphere-metal-red-large__..." => remove "generated_" if needed
+        const groundtruthPath = './static/demo-images/blender-groundtruth/' +
+          fileName.replace('generated_', '');
+
+        // Show spinner
+        $('#generated-img').hide();
+        $('#groundtruth-img').hide();
+        $('#loading-indicator').show();
+
+        // Simulate a short delay to mimic loading/fetching
+        setTimeout(() => {
+          $('#loading-indicator').hide();
+          $('#generated-img').attr('src', generatedPath).show();
+          $('#groundtruth-img').attr('src', groundtruthPath).show();
+        }, 1500);
+      });
+
+      // ------------ SECOND DEMO (Slider for X-coordinate) ------------
+      function updateSliderImages() {
+        let val = parseFloat($('#x-slider').val()).toFixed(2);
+        // If you need a plus sign for positive:
+        // let signVal = (val >= 0) ? `+${val}` : val;
+        let signVal = val;
+
+        $('#x-slider-value').text(val);
+
+        let generatedPath = `./static/x-axis-demo-images/GENERATED/generated_${signVal}-sphere-metal-gray-small.png`;
+        let groundPath = `./static/x-axis-demo-images/BLENDER-GROUNDTRUTH/${signVal}-sphere-metal-gray-small.png`;
+
+        $('#x-generated-img').attr('src', generatedPath);
+        $('#x-groundtruth-img').attr('src', groundPath);
+      }
+
+      $('#x-slider').on('input', updateSliderImages);
+      updateSliderImages(); // call once on page load
+    });
+  </script>
+
+  <script>
+    $(function () {
+      const $logo = $('.kyvo-logo-fly');
+      $logo.attr('title', 'Click me!');
+
+      $logo.on('click', function () {
+        const $el = $(this);
+        // Restart animation if already mid‑pop
+        if ($el.hasClass('clicked')) {
+          $el.removeClass('clicked');
+          void this.offsetWidth; // Force reflow
+        }
+        $el.addClass('clicked');
+        // Remove again so flight resumes
+        setTimeout(() => $el.removeClass('clicked'), 650);
+      });
+    });
+  </script>
+
+  <!-- Copy‑to‑clipboard helper for BibTeX -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('copy-bibtex');
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        const bib = `@article{sahoo2023autoregressive,\n  title={Aligning Text, Images, and 3D Structure Token-by-Token},\n  author={Sahoo, Aadarsh and Gkioxari, Georgia},\n  journal={arXiv preprint arXiv:XXXX.XXXXX},\n  year={2023}\n}`;
+        navigator.clipboard.writeText(bib).then(() => {
+          btn.classList.remove('is-link');
+          btn.classList.add('is-success');
+          btn.querySelector('span:last-child').textContent = 'Copied!';
+          setTimeout(() => {
+            btn.classList.remove('is-success');
+            btn.classList.add('is-link');
+            btn.querySelector('span:last-child').textContent = 'Copy';
+          }, 2000);
+        });
+      });
+    });
+  </script>
+
+</body>
+
+</html>

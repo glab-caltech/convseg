@@ -1,0 +1,92 @@
+<!-- comingsoon.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Kyvo – Coming Soon!</title>
+
+    <!-- Bulma for quick styling -->
+    <link rel="stylesheet" href="./static/css/bulma.min.css" />
+    <link rel="icon" href="./static/images/kyvo.png">
+
+    <!-- Cute Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet" />
+
+    <style>
+        :root {
+            /* soft “pastel candy” palette */
+            --pink: #ffd1e3;
+            --blue: #c3e7ff;
+            --violet: #ece3ff;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            font-family: "Nunito", sans-serif;
+            background: linear-gradient(135deg, var(--pink), var(--violet) 35%, var(--blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            border-radius: 1.25rem;
+            padding: 3rem 2.5rem;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, .12);
+            backdrop-filter: blur(8px);
+            max-width: 25rem;
+            width: 90%;
+        }
+
+        .logo {
+            width: 7rem;
+            animation: float 5s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        h1 {
+            margin-top: 1.5rem;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        p {
+            margin-top: 0.5rem;
+            font-size: 1.15rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <img class="logo" src="./static/images/kyvo.png" alt="Kyvo logo" />
+        <h1>Stay Tuned ❤️</h1>
+        <p>Our demo<br>will be available very soon.</p>
+        <!-- NEW -->
+        <p class="has-text-grey-light" style="font-size:.9rem; margin-top:1.25rem;">
+            In the meantime, why not <a href="https://arxiv.org/abs/XXXX.XXXXX" target="_blank"
+                rel="noopener noreferrer">
+                read&nbsp;the&nbsp;paper&nbsp;📄</a> or check out <a href="https://github.com/AadSah/kyvo"
+                target="_blank" rel="noopener noreferrer">
+                the&nbsp;code&nbsp;💻</a> while we put the finishing touches on the demo?
+        </p>
+    </div>
+</body>
+
+</html>
