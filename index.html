@@ -928,12 +928,12 @@
     const DEMO_DATA = [
       {
         id: "scene1",
-        thumb: "./static/images-overlaid/demo_1_orig.png",
-        image: "./static/images-overlaid/demo_1_orig.png",
+        thumb: "./static/images-overlaid/demo_4_orig.png",
+        image: "./static/images-overlaid/demo_4_orig.png",
         prompts: [
-          { text: "Segment the person currently touching their mouth.", type: "Relations & Events", mask_img: "./static/images-overlaid/demo_1_mask_1.png" },
-          { text: "Segment the person wearing visible wrist attire.", type: "Entities", mask_img: "./static/images-overlaid/demo_1_mask_2.png" },
-          { text: "Segment the most appropriate object for wiping up spilled liquid.", type: "Affordances & Functions", mask_img: "./static/images-overlaid/demo_1_mask_3.png" }
+          { text: "Identify the region showing rapid external movement.", type: "Affordances & Functions", mask_img: "./static/images-overlaid/demo_4_mask_1.png" },
+          { text: "Segment an object usable as a temporary straight edge.", type: "Affordances & Functions", mask_img: "./static/images-overlaid/demo_4_mask_2.png" },
+          { text: "Segment the objects actively held by the person.", type: "Spatial & Layout", mask_img: "./static/images-overlaid/demo_4_mask_3.png" }
         ]
       },
       {
@@ -957,6 +957,16 @@
         ]
       },
       // NEW SCENES 4-6 (Placeholders)
+      {
+        id: "scene4",
+        thumb: "./static/images-overlaid/demo_1_orig.png",
+        image: "./static/images-overlaid/demo_1_orig.png",
+        prompts: [
+          { text: "Segment the person currently touching their mouth.", type: "Relations & Events", mask_img: "./static/images-overlaid/demo_1_mask_1.png" },
+          { text: "Segment the person wearing visible wrist attire.", type: "Entities", mask_img: "./static/images-overlaid/demo_1_mask_2.png" },
+          { text: "Segment the most appropriate object for wiping up spilled liquid.", type: "Affordances & Functions", mask_img: "./static/images-overlaid/demo_1_mask_3.png" }
+        ]
+      },
       {
         id: "scene4",
         thumb: "./static/images-overlaid/demo_4_orig.png",
