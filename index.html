@@ -3,10 +3,10 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="description" content="Kyvo">
-  <meta name="keywords" content="3D Structured Language, Cookbook">
+  <meta name="description" content="Conversational Image Segmentation">
+  <meta name="keywords" content="Conversational Image Segmentation, Scalable Supervision, Computer Vision">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>Aligning Text, Images, and 3D Structure Token-by-Token</title>
+  <title>Conversational Image Segmentation: Grounding Abstract Concepts with Scalable Supervision</title>
 
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
@@ -18,214 +18,442 @@
   <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
   <link rel="stylesheet" href="./static/css/index.css">
-  <link rel="icon" href="./static/images/kyvo.png">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
 
-  <!-- jQuery & Plotly -->
+  <!-- jQuery & JS -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="https://cdn.plot.ly/plotly-2.9.0.min.js"></script>
   <script defer src="./static/js/fontawesome.all.min.js"></script>
   <script src="./static/js/bulma-carousel.min.js"></script>
   <script src="./static/js/bulma-slider.min.js"></script>
   <script src="./static/js/index.js"></script>
 
   <!-- ──────────────────────────────────────────────────── -->
-  <!--  ✨ Extra styles (mobile‑first + logo animation) ✨  -->
+  <!--  ✨ Custom Styles ✨                                 -->
   <!-- ──────────────────────────────────────────────────── -->
   <style>
-    /* 1️⃣  Generic responsive helpers  */
+    /* General Mobile Tweaks */
     img,
     video {
       max-width: 100%;
       height: auto;
     }
 
-    pre {
-      overflow-x: auto;
-      /* horizontal scroll on small screens */
-      white-space: pre-wrap;
-      /* allow wrapping if needed */
-      word-break: break-word;
-    }
-
-    #x-slider {
-      width: 100% !important;
-    }
-
-    .image.is-square {
-      height: auto;
-      /* override Bulma on mobile */
-    }
-
-    /* 2️⃣  Flying Kyvo Logo  */
-    .hero {
-      position: relative;
-      /* containing block for absolute‑positioned logo */
-    }
-
-    .kyvo-logo-fly {
-      position: absolute;
-      width: 120px;
-      top: 50px;
-      right: 150px;
-      animation: fly 12s ease-in-out infinite;
-      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.25));
-      transition: transform 0.3s;
-      cursor: pointer;
-    }
-
-    .kyvo-logo-fly:hover {
-      transform: scale(1.1) rotate(10deg);
-    }
-
-    @keyframes fly {
-      0% {
-        transform: translate(-30px, 0) rotate(0deg);
-      }
-
-      25% {
-        transform: translate(10px, -20px) rotate(12deg);
-      }
-
-      50% {
-        transform: translate(35px, 10px) rotate(-8deg);
-      }
-
-      75% {
-        transform: translate(-10px, 20px) rotate(6deg);
-      }
-
-      100% {
-        transform: translate(-30px, 0) rotate(0deg);
-      }
-    }
-
-    /* Pop‑spin on click */
-    @keyframes pop {
-      0% {
-        transform: scale(1) rotate(0deg);
-      }
-
-      50% {
-        transform: scale(1.4) rotate(360deg);
-      }
-
-      100% {
-        transform: scale(1) rotate(720deg);
-      }
-    }
-
-    .kyvo-logo-fly.clicked {
-      animation: pop 1.2s ease-out forwards;
-      /* doubled duration */
-    }
-
-    /* 3️⃣  Mobile‑specific tweaks with media queries */
     @media (max-width: 768px) {
       h1.publication-title {
         font-size: 1.75rem;
-        /* smaller headline */
         line-height: 1.2;
       }
 
-      .kyvo-logo-fly {
-        width: 80px;
-        /* shrink logo */
-        top: 16px;
-        right: 16px;
+      .cis-controls-row {
+        flex-direction: column;
+        align-items: stretch !important;
       }
 
-      .title.is-3 {
-        font-size: 1.35rem;
+      .cis-thumb {
+        width: 60px !important;
+        height: 60px !important;
       }
+    }
 
-      .title.is-4 {
-        font-size: 1.25rem;
-      }
+    /* ─── 1. Main Interactive Demo Styles ─── */
+    .cis-demo-wrapper {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      border: 1px solid #eee;
+    }
 
-      .box.object-row {
-        padding: 0.5rem;
-        /* tighter boxes */
-      }
+    .cis-demo-container {
+      display: flex;
+      flex-direction: column;
+      padding: 2rem;
+      gap: 1.5rem;
+      min-height: 600px;
+    }
 
-      /* Allow the two‑column interactive demo to stack sooner */
-      #interactive-demo .columns.is-desktop {
-        display: block;
-      }
+    .cis-thumb-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 0.5rem;
+    }
+
+    .cis-thumb {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 3px solid transparent;
+      opacity: 0.7;
+    }
+
+    .cis-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .cis-thumb:hover {
+      transform: translateY(-2px);
+      opacity: 1;
+    }
+
+    .cis-thumb.active {
+      border-color: #3273dc;
+      box-shadow: 0 0 0 3px rgba(50, 115, 220, 0.2);
+      opacity: 1;
+      transform: scale(1.05);
+      z-index: 2;
+    }
+
+    .cis-controls-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 2rem;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 1rem;
+      background: #fcfcfc;
+      border-radius: 8px;
+      border: 1px solid #f0f0f0;
+    }
+
+    .cis-control-group {
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .cis-tag-group {
+      flex: 0 0 auto;
+    }
+
+    .cis-viewer {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .comparison-view {
+      position: relative;
+      width: 100%;
+      max-width: 850px;
+      aspect-ratio: 4 / 3;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      background-color: #eee;
+      user-select: none;
+    }
+
+    .compare-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+    }
+
+    .img-modified {
+      z-index: 2;
+      background-color: white;
+    }
+
+    .img-original {
+      z-index: 1;
+    }
+
+    .slider-handle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #fff;
+      z-index: 10;
+      cursor: col-resize;
+      filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.5));
+    }
+
+    .slider-circle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px;
+      height: 44px;
+      background: #3273dc;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 16px;
+    }
+
+    .label-badge {
+      position: absolute;
+      padding: 6px 12px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border-radius: 6px;
+      pointer-events: none;
+      z-index: 5;
+      backdrop-filter: blur(2px);
+      /* CHANGED: Added transition for smooth disappearance */
+      transition: opacity 0.2s ease-out;
+      opacity: 1;
+    }
+
+    .label-original {
+      bottom: 15px;
+      right: 15px;
+    }
+
+    .label-mask {
+      bottom: 15px;
+      left: 15px;
+    }
+
+    /* ─── 2. Results Grid Styles ─── */
+    .result-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      border: 1px solid #f0f0f0;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .result-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+      z-index: 10;
+    }
+
+    .result-card::after {
+      content: '\f35d';
+      font-family: 'Font Awesome 5 Free';
+      font-weight: 900;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.95);
+      color: #3273dc;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 20;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .result-card:hover::after {
+      opacity: 1;
+    }
+
+    .result-header {
+      padding: 1rem 1rem 0.75rem 1rem;
+      background: #fff;
+    }
+
+    .prompt-text {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 0.95rem;
+      color: #333;
+      line-height: 1.4;
+      font-weight: 500;
+    }
+
+    .mini-slider-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4/3;
+      overflow: hidden;
+      cursor: col-resize;
+      background: #f0f0f0;
+      flex-grow: 1;
+    }
+
+    .mini-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+    }
+
+    .mini-handle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: rgba(255, 255, 255, 0.8);
+      z-index: 10;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+
+    /* ─── 3. Modal Styles ─── */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(20, 20, 20, 0.95);
+      backdrop-filter: blur(5px);
+      z-index: 9999;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-content-card {
+      width: 100%;
+      max-width: 1100px;
+      position: relative;
+      transform: scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modal-overlay.active .modal-content-card {
+      transform: scale(1);
+    }
+
+    .modal-slider-view {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      cursor: col-resize;
+    }
+
+    .modal-text-container {
+      margin-top: 1.5rem;
+      text-align: center;
+      color: white;
+    }
+
+    .modal-prompt {
+      font-size: 1.5rem;
+      font-family: 'Google Sans', sans-serif;
+      font-weight: 500;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+    }
+
+    .close-modal {
+      position: absolute;
+      top: -50px;
+      right: -10px;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      transition: background 0.2s;
+    }
+
+    .close-modal:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* ─── 4. Pipeline & Model Sections ─── */
+    .pipeline-step {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid #eee;
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+
+    .step-number {
+      font-weight: bold;
+      color: #3273dc;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+      display: block;
     }
   </style>
 </head>
 
 <body>
-  <!-- ===================== HERO / TITLE ===================== -->
+  <!-- ===================== HERO ===================== -->
   <section class="hero">
     <div class="hero-body">
       <div class="container is-max-desktop">
         <div class="columns is-centered">
-          <div class="column has-text-centered" style="position: relative;">
+          <div class="column has-text-centered">
             <h1 class="title is-1 publication-title">
-              Aligning Text, Images, and 3D Structure Token-by-Token
+              Conversational Image Segmentation:<br>
+              <span class="is-size-3">Grounding Abstract Concepts with Scalable Supervision</span>
             </h1>
-            <!-- ✈️ The cute flying Kyvo logo -->
-            <img src="./static/images/kyvo.png" alt="Kyvo Logo" class="kyvo-logo-fly" />
-
             <div class="is-size-5 publication-authors">
-              <span class="author-block">
-                <a href="https://aadsah.github.io/" target="_blank" rel="noopener noreferrer">Aadarsh Sahoo</a>,</span>
-              <span class="author-block">
-                <a href="https://vanshtibrewal.github.io/" target="_blank" rel="noopener noreferrer">Vansh
-                  Tibrewal</a>,</span>
-              <span class="author-block">
-                <a href="https://gkioxari.github.io/" target="_blank" rel="noopener noreferrer">Georgia
-                  Gkioxari</a></span>
+              <span class="author-block"><a href="#">Aadarsh Sahoo</a>,</span>
+              <span class="author-block"><a href="#">Georgia Gkioxari</a></span>
             </div>
             <div class="is-size-5 publication-authors">
-              <span class="author-block">Caltech</span>
+              <span class="author-block">California Institute of Technology</span>
             </div>
-            <div class="column has-text-centered">
-              <div class="publication-links">
-                <!-- Paper -->
-                <span class="link-block">
-                  <a href="https://arxiv.org/pdf/2506.08002" class="button is-normal is-rounded is-link is-light">
-                    <span class="icon"><i class="fas fa-file-pdf"></i></span>
-                    <span>Paper</span>
-                  </a>
+            <div class="publication-links mt-4">
+              <a href="#" class="button is-normal is-rounded is-link is-light"><span class="icon"><i
+                    class="fas fa-file-pdf"></i></span><span>Paper</span></a>
+              <a href="#" class="button is-normal is-rounded is-link is-light"><span class="icon"><i
+                    class="ai ai-arxiv"></i></span><span>arXiv</span></a>
+              <a href="#" class="button is-normal is-rounded is-link is-light"><span class="icon"><i
+                    class="fab fa-github"></i></span><span>Code</span></a>
+              <!-- Added Hugging Face Benchmark Button -->
+              <a href="#" class="button is-normal is-rounded is-link is-light">
+                <span class="icon">
+                  <p style="font-size:18px">🤗</p>
                 </span>
-
-                <!-- arXiv -->
-                <span class="link-block">
-                  <a href="https://arxiv.org/abs/2506.08002" class="button is-normal is-rounded is-link is-light">
-                    <span class="icon"><i class="ai ai-arxiv"></i></span>
-                    <span>arXiv</span>
-                  </a>
-                </span>
-                <!-- Code -->
-                <span class="link-block">
-                  <a href="https://github.com/AadSah/kyvo" class="button is-normal is-rounded is-link is-light">
-                    <span class="icon"><i class="fab fa-github"></i></span>
-                    <span>Code</span>
-                  </a>
-                </span>
-
-                <!-- Dataset -->
-                <span class="link-block">
-                  <a href="https://huggingface.co/datasets/aadarsh99/kyvo-datasets-and-codebooks"
-                    class="button is-normal is-rounded is-link is-light">
-                    <span class="icon">
-                      <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg"
-                        alt="huggingface logo" style="height:1em;">
-                    </span>
-                    <span>Dataset</span>
-                  </a>
-                </span>
-
-                <!-- Interactive Demo (updated) -->
-                <span class="link-block">
-                  <a href="#interactive-rendering-demos" class="button is-normal is-rounded is-link is-light">
-                    <span class="icon"><i class="fas fa-play-circle"></i></span>
-                    <span>Demo</span>
-                  </a>
-                </span>
-              </div>
+                <span>Benchmark</span>
+              </a>
+              <a href="#interactive-demo" class="button is-normal is-rounded is-link is-light"><span class="icon"><i
+                    class="fas fa-magic"></i></span><span>Demo</span></a>
             </div>
           </div>
         </div>
@@ -233,31 +461,23 @@
     </div>
   </section>
 
-  <section class="section">
-    <div class="container is-max-desktop">
-      <div class="columns is-centered has-text-centered">
-        <div class="content has-text-centered">
-          <p>
-            <b>tl;dr</b> We propose a unified LLM framework that aligns language, images, and structured 3D scenes to
-            perform core 3D tasks.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-
+  <!-- ===================== TEASER ===================== -->
   <section class="teaser video">
     <div class="container is-max-desktop">
       <div class="teaser-body">
-        <!-- Make video responsive by removing fixed height and letting max-width handle it -->
-        <video id="teaser" autoplay muted loop playsinline style="max-width:100%; height:auto;">
+        <video id="teaser" autoplay muted loop playsinline
+          style="max-width:100%; height:auto; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
           <source src="static/videos/webpage-video.mov" type="video/mp4">
         </video>
+        <h2 class="subtitle has-text-centered" style="margin-top: 1.5rem;">
+          <b>Conversational Image Segmentation (CIS)</b> grounds abstract, intent-oriented concepts into pixel-accurate
+          masks, reasoning about affordances, physics, and functional properties.
+        </h2>
       </div>
     </div>
   </section>
 
+  <!-- ===================== ABSTRACT ===================== -->
   <section class="section">
     <div class="container is-max-desktop">
       <div class="columns is-centered has-text-centered">
@@ -265,17 +485,17 @@
           <h2 class="title is-3">Abstract</h2>
           <div class="content has-text-justified">
             <p>
-              Creating machines capable of understanding the world in 3D is essential in assisting designers that build
-              and edit 3D environments and robots navigating and interacting within a three-dimensional space. Inspired
-              by advances in language and image modeling, we investigate the potential of autoregressive models for a
-              new modality: structured 3D scenes. To this end, we propose a unified LLM framework that aligns language,
-              images, and 3D scenes and provide a detailed ''cookbook'' outlining critical design choices for achieving
-              optimal training and performance addressing key questions related to data representation,
-              modality-specific objectives, and more. We evaluate performance across four core 3D tasks – rendering,
-              recognition, instruction-following, and question-answering – and four 3D datasets, synthetic and
-              real-world. We extend our approach to reconstruct complex 3D object shapes by enriching our 3D modality
-              with quantized shape encodings, and show our model's effectiveness on real-world 3D object recognition
-              tasks.
+              Conversational image segmentation grounds abstract, intent-driven concepts into pixel-accurate masks.
+              Prior work on referring image grounding focuses on categorical and spatial queries (e.g., “left-most
+              apple”) and overlooks functional and physical reasoning (e.g., “where can I safely store the knife?”).
+            </p>
+            <p>
+              We address this gap and introduce <b>Conversational Image Segmentation (CIS)</b> and <b>ConvSeg</b>, a
+              benchmark spanning entities, spatial relations, intent, affordances, functions, safety, and physical
+              reasoning. We also present <b>ConvSeg-Net</b>, which fuses strong segmentation priors with language
+              understanding, and an AI-powered data engine that generates prompt–mask pairs without human supervision.
+              We show that ConvSeg-Net achieves significant gains on ConvSeg and maintains strong performance on
+              existing benchmarks.
             </p>
           </div>
         </div>
@@ -283,622 +503,715 @@
     </div>
   </section>
 
+  <!-- ===================== MAIN DEMO ===================== -->
+  <section class="section" id="interactive-demo" style="background-color: #fcfcfc;">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full">
+          <h2 class="title is-3">Interactive Demo</h2>
+          <p class="subtitle is-6 mb-5">
+            Select an image from the row below, then choose a conversational prompt to see how <b>ConvSeg-Net</b>
+            reasons.
+          </p>
+
+          <div class="cis-demo-wrapper">
+            <div class="cis-demo-container">
+
+              <!-- 1. TOP ROW: Image Selection -->
+              <div class="cis-top-section">
+                <h4 class="title is-5 has-text-centered mb-3"><i class="fas fa-image"></i> Select Image</h4>
+                <div class="cis-thumb-row" id="thumbnails-container">
+                  <!-- Thumbnails injected by JS here -->
+                </div>
+              </div>
+
+              <!-- 2. MIDDLE ROW: Controls -->
+              <div class="cis-controls-row">
+                <div class="cis-control-group has-text-left">
+                  <h4 class="title is-6 mb-2"><i class="fas fa-comment-dots"></i> Conversational Prompt</h4>
+                  <div class="select is-fullwidth">
+                    <select id="prompt-select" class="custom-select"></select>
+                  </div>
+                </div>
+                <div class="cis-tag-group">
+                  <div class="notification is-light is-info" style="padding: 0.5rem 1rem; margin-bottom: 0;">
+                    <p class="heading" style="margin-bottom: 0.25rem;">Concept Family</p>
+                    <p class="subtitle is-6" id="prompt-desc-tag"
+                      style="color: #209cee; font-weight:bold; margin-bottom:0;">Affordance</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. BOTTOM ROW: Full Width Viewer -->
+              <div class="cis-viewer">
+                <div class="comparison-view" id="comparison-container">
+                  <div class="loader-overlay" id="demo-loader"
+                    style="position:absolute; inset:0; background:rgba(255,255,255,0.9); z-index:20; display:flex; justify-content:center; align-items:center;">
+                    <span class="icon is-large"><i class="fas fa-spinner fa-pulse fa-3x"></i></span>
+                  </div>
+                  <img src="" class="compare-img img-original" id="img-original">
+                  <img src="" class="compare-img img-modified" id="img-modified">
+                  <span class="label-badge label-mask">ConvSeg Output</span>
+                  <span class="label-badge label-original">Original Image</span>
+                  <div class="slider-handle" id="slider-handle" style="left: 50%;">
+                    <div class="slider-circle"><i class="fas fa-arrows-alt-h"></i></div>
+                  </div>
+                </div>
+                <p class="interaction-hint mt-3">
+                  <i class="fas fa-hand-pointer"></i> Drag slider to reveal mask
+                </p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== GALLERY GRID ===================== -->
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered mb-5">
+        <div class="column is-full">
+          <h2 class="title is-3">Qualitative Results</h2>
+          <p class="subtitle is-6">
+            ConvSeg-Net generalizes across diverse reasoning tasks.
+            <br><i>Hover over cards to compare. <b>Click</b> to view in high resolution.</i>
+          </p>
+        </div>
+      </div>
+
+      <!-- 12 Items Grid -->
+      <div class="columns is-multiline" id="gallery-grid">
+
+        <!-- Generated Cards 1-6 -->
+        <div class="column is-4">
+          <div class="result-card" data-orig="./static/images/bed_orig.jpg" data-mask="./static/images/bed_mask.jpg"
+            data-prompt="Segment the elephant acting as the vanguard of the herd.">
+            <div class="result-header">
+              <p class="prompt-text">"Segment the elephant acting as the vanguard of the herd."</p>
+            </div>
+            <div class="mini-slider-container">
+              <img src="./static/images-overlaid/1_orig.png" class="mini-img img-orig">
+              <img src="./static/images-overlaid/1_mask.png" class="mini-img img-mask"
+                style="z-index:2; clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+              <div class="mini-handle" style="left: 50%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-4">
+          <div class="result-card" data-orig="./static/images/spill_orig.jpg" data-mask="./static/images/spill_mask.jpg"
+            data-prompt="Identify the sphere farthest away from the polar bear.">
+            <div class="result-header">
+              <p class="prompt-text">"Identify the sphere farthest away from the polar bear."</p>
+            </div>
+            <div class="mini-slider-container">
+              <img src="./static/images-overlaid/2_orig.png" class="mini-img img-orig">
+              <img src="./static/images-overlaid/2_mask.png" class="mini-img img-mask"
+                style="z-index:2; clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+              <div class="mini-handle" style="left: 50%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-4">
+          <div class="result-card" data-orig="./static/images/lamp_orig.jpg" data-mask="./static/images/lamp_mask.jpg"
+            data-prompt="Segment the figure actively wearing eye protection.">
+            <div class="result-header">
+              <p class="prompt-text">"Segment the figure actively wearing eye protection."</p>
+            </div>
+            <div class="mini-slider-container">
+              <img src="./static/images-overlaid/3_orig.png" class="mini-img img-orig">
+              <img src="./static/images-overlaid/3_mask.png" class="mini-img img-mask"
+                style="z-index:2; clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+              <div class="mini-handle" style="left: 50%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-4">
+          <div class="result-card" data-orig="./static/images/tennis_orig.jpg"
+            data-mask="./static/images/tennis_mask.jpg"
+            data-prompt="Segment surfaces suitable for holding a stable cup.">
+            <div class="result-header">
+              <p class="prompt-text">"Segment surfaces suitable for holding a stable cup."</p>
+            </div>
+            <div class="mini-slider-container">
+              <img src="./static/images-overlaid/4_orig.png" class="mini-img img-orig">
+              <img src="./static/images-overlaid/4_mask.png" class="mini-img img-mask"
+                style="z-index:2; clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+              <div class="mini-handle" style="left: 50%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-4">
+          <div class="result-card" data-orig="./static/images/wood_orig.jpg" data-mask="./static/images/wood_mask.jpg"
+            data-prompt="Segment the animal posing the greatest immediate collision risk.">
+            <div class="result-header">
+              <p class="prompt-text">"Segment the animal posing the greatest immediate collision risk."</p>
+            </div>
+            <div class="mini-slider-container">
+              <img src="./static/images-overlaid/5_orig.png" class="mini-img img-orig">
+              <img src="./static/images-overlaid/5_mask.png" class="mini-img img-mask"
+                style="z-index:2; clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+              <div class="mini-handle" style="left: 50%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-4">
+          <div class="result-card" data-orig="./static/images/knife_orig.jpg" data-mask="./static/images/knife_mask.jpg"
+            data-prompt="Segment the object serving a substituted functional role.">
+            <div class="result-header">
+              <p class="prompt-text">"Segment the object serving a substituted functional role."</p>
+            </div>
+            <div class="mini-slider-container">
+              <img src="./static/images-overlaid/6_orig.png" class="mini-img img-orig">
+              <img src="./static/images-overlaid/6_mask.png" class="mini-img img-mask"
+                style="z-index:2; clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+              <div class="mini-handle" style="left: 50%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-4">
+          <div class="result-card" data-orig="./static/images/bed_orig.jpg" data-mask="./static/images/bed_mask.jpg"
+            data-prompt="Segment the object used to gain attention.">
+            <div class="result-header">
+              <p class="prompt-text">"Segment the object used to gain attention."</p>
+            </div>
+            <div class="mini-slider-container">
+              <img src="./static/images-overlaid/7_orig.png" class="mini-img img-orig">
+              <img src="./static/images-overlaid/7_mask.png" class="mini-img img-mask"
+                style="z-index:2; clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+              <div class="mini-handle" style="left: 50%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-4">
+          <div class="result-card" data-orig="./static/images/spill_orig.jpg" data-mask="./static/images/spill_mask.jpg"
+            data-prompt="Segment vessels currently holding a liquid beverage.">
+            <div class="result-header">
+              <p class="prompt-text">"Segment vessels currently holding a liquid beverage."</p>
+            </div>
+            <div class="mini-slider-container">
+              <img src="./static/images-overlaid/8_orig.png" class="mini-img img-orig">
+              <img src="./static/images-overlaid/8_mask.png" class="mini-img img-mask"
+                style="z-index:2; clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+              <div class="mini-handle" style="left: 50%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-4">
+          <div class="result-card" data-orig="./static/images/lamp_orig.jpg" data-mask="./static/images/lamp_mask.jpg"
+            data-prompt="Segment the moving object with the highest momentum.">
+            <div class="result-header">
+              <p class="prompt-text">"Segment the moving object with the highest momentum."</p>
+            </div>
+            <div class="mini-slider-container">
+              <img src="./static/images-overlaid/9_orig.png" class="mini-img img-orig">
+              <img src="./static/images-overlaid/9_mask.png" class="mini-img img-mask"
+                style="z-index:2; clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+              <div class="mini-handle" style="left: 50%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-4">
+          <div class="result-card" data-orig="./static/images/tennis_orig.jpg"
+            data-mask="./static/images/tennis_mask.jpg" data-prompt="Identify the upholstered furniture piece.">
+            <div class="result-header">
+              <p class="prompt-text">"Identify the upholstered furniture piece."</p>
+            </div>
+            <div class="mini-slider-container">
+              <img src="./static/images-overlaid/10_orig.png" class="mini-img img-orig">
+              <img src="./static/images-overlaid/10_mask.png" class="mini-img img-mask"
+                style="z-index:2; clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+              <div class="mini-handle" style="left: 50%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-4">
+          <div class="result-card" data-orig="./static/images/wood_orig.jpg" data-mask="./static/images/wood_mask.jpg"
+            data-prompt="Segment primary furniture intended for concealed storage.">
+            <div class="result-header">
+              <p class="prompt-text">"Segment primary furniture intended for concealed storage."</p>
+            </div>
+            <div class="mini-slider-container">
+              <img src="./static/images-overlaid/11_orig.png" class="mini-img img-orig">
+              <img src="./static/images-overlaid/11_mask.png" class="mini-img img-mask"
+                style="z-index:2; clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+              <div class="mini-handle" style="left: 50%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-4">
+          <div class="result-card" data-orig="./static/images/knife_orig.jpg" data-mask="./static/images/knife_mask.jpg"
+            data-prompt="Segment objects most likely to tip over.">
+            <div class="result-header">
+              <p class="prompt-text">"Segment objects most likely to tip over."</p>
+            </div>
+            <div class="mini-slider-container">
+              <img src="./static/images-overlaid/12_orig.png" class="mini-img img-orig">
+              <img src="./static/images-overlaid/12_mask.png" class="mini-img img-mask"
+                style="z-index:2; clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
+              <div class="mini-handle" style="left: 50%;"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== NEW SECTION: BENCHMARK ===================== -->
   <section class="section">
     <div class="container is-max-desktop">
       <div class="columns is-centered has-text-centered">
-        <div class="column is-full-width">
-          <h2 class="title is-3">Approach</h2>
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">The ConvSeg Benchmark</h2>
           <div class="content has-text-justified">
             <p>
-              <b>Kyvo:</b> a decoder-only transformer aligns a structured 3D modality with language and vision.
-              This 3D modality represents scenes as lists of objects, each defined by its 3D shape, type, 3D position,
-              pose and size parameters. Kyvo unifies the token space of images, text, and 3D to enable a variety of
-              complex visual 3D tasks.
-            </p>
-            <!-- Make images responsive -->
-            <img src="static/images/teaser.png" alt="Approach" style="max-width:100%; height:auto;">
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="reconstruction-video">
-    <div class="container is-max-desktop">
-      <!-- add horizontal line -->
-      <hr>
-      <h3 class="title is-3 has-text-centered">Unified Shape and Scene Reconstruction</h3>
-      <div class="content has-text-centered">
-        <p>
-          From a single image, Kyvo reconstructs 3D object shape and layout.
-        </p>
-      </div>
-      <div class="reconstruction-video">
-        <!-- Make video responsive by removing fixed height and letting max-width handle it -->
-        <video id="reconstruction-video" autoplay muted loop playsinline style="max-width:100%; height:auto;">
-          <source src="static/videos/reconstruction-video.mov" type="video/mp4">
-        </video>
-      </div>
-    </div>
-  </section>
-
-  <section class="rendering-video">
-    <div class="container is-max-desktop">
-      <!-- add horizontal line -->
-      <hr>
-      <h3 class="title is-3 has-text-centered">Shape and Scene Rendering</h3>
-      <div class="content has-text-centered">
-        <p>
-          Given 3D assets and the desired 3D location and pose, Kyvo predicts the image autoregressively.
-        </p>
-      </div>
-      <div class="rendering-video">
-        <!-- Make video responsive by removing fixed height and letting max-width handle it -->
-        <video id="rendering-video" autoplay muted loop playsinline style="max-width:100%; height:auto;">
-          <source src="static/videos/rendering-video.mov" type="video/mp4">
-        </video>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="container is-max-desktop">
-      <div class="columns is-centered has-text-centered">
-        <div class="column is-full-width">
-          <hr>
-          <h2 class="title is-3">Qualitative Examples</h2>
-          <div class="tabs is-boxed is-centered is-medium" id="tabs">
-            <ul>
-              <li data-tab="reconstruction-objaworld" class="is-active"><a>Reconstruction - ObjaWorld</a></li>
-              <li data-tab="rendering-objaworld"><a>Rendering - ObjaWorld</a></li>
-              <li data-tab="rendering-clevr"><a>Rendering - CLEVR</a></li>
-              <li data-tab="recognition"><a>Recognition - ObjaWorld</a></li>
-              <li data-tab="question-answering"><a>Question-Answering - CLEVR</a></li>
-            </ul>
-          </div>
-          <div class="columns is-centered has-text-left"></div>
-          <div id="tabs-content">
-            <!-- Rendering (CLEVR) -->
-            <div data-content="rendering-clevr" class="tab-content content">
-              <div class="columns is-centered has-text-left">
-                <div class="column is-two-thirds content">
-                  Example image generations for the rendering task on CLEVR. The model takes a 3D scene as input and
-                  produces a corresponding image. Additionally, we show the ground-truth image rendered using Blender.
-                </div>
-              </div>
-              <figure class="image">
-                <img src="static/images/app-rendering-examples-clevr.png" style="max-width:100%; height:auto;">
-              </figure>
-            </div>
-            <!-- Reconstruction (ObjaWorld) -->
-            <div data-content="reconstruction-objaworld" class="tab-content is-active content">
-              <div class="columns is-centered has-text-left">
-                <div class="column is-two-thirds content">
-                  Given a single input image, Kyvo predicts shape sequences and reconstructs individual objects (bottle,
-                  cheeseburger, etc.) along with their 3D locations and poses via our structured 3D modality,
-                  effectively reconstructing the 3D scene with consistent spatial relations between the objects,
-                  visualized using Blender.
-                </div>
-              </div>
-              <figure class="image">
-                <img src="static/images/appendix-images-to-scenes-examples-1.png" style="max-width:100%; height:auto;">
-              </figure>
-              <figure class="image">
-                <img src="static/images/appendix-images-to-scenes-examples-2.png" style="max-width:100%; height:auto;">
-              </figure>
-            </div>
-            <!-- Rendering (ObjaWorld) -->
-            <div data-content="rendering-objaworld" class="tab-content content">
-              <div class="columns is-centered has-text-left">
-                <div class="column is-two-thirds content">
-                  Example image generations for the rendering task on ObjaWorld. The model takes a 3D scene with
-                  embedded shape encodings as input and produces a corresponding image. Additionally, we show the
-                  ground-truth image rendered using Blender.
-                </div>
-              </div>
-              <figure class="image">
-                <img src="static/images/appendix-scene-to-images-examples.png" style="max-width:100%; height:auto;">
-              </figure>
-              <div class="columns is-centered has-text-left">
-                <div class="column is-two-thirds content">
-                  Example image generations for the rendering task on ObjaWorld. The model takes a 3D scene as input and
-                  produces a corresponding image. Additionally, we show the ground-truth image rendered using Blender.
-                </div>
-              </div>
-              <figure class="image">
-                <img src="static/images/app-rendering-examples-objaworld.png" style="max-width:100%; height:auto;">
-              </figure>
-            </div>
-            <!-- Recognition -->
-            <div data-content="recognition" class="tab-content content">
-              <div class="columns is-centered has-text-left">
-                <div class="column is-two-thirds content">
-                  Two example predictions from the recognition task on ObjaWorld. The colored numbers indicate object
-                  matching between the predicted and ground-truth scenes, based on the criteria for Jaccard Index as
-                  defined in Algorithm 1 in the paper.
-                </div>
-              </div>
-              <figure class="image">
-                <img src="static/images/app-recognition-examples-clevr.png" style="max-width:100%; height:auto;">
-              </figure>
-            </div>
-            <!-- Question-Answering -->
-            <div data-content="question-answering" class="tab-content content">
-              <div class="columns is-centered has-text-left">
-                <div class="column is-two-thirds content">
-                  Example cases from the question-answering task on CLEVR. The model takes an image, a 3D scene, and a
-                  question as input to generate the corresponding answer.
-                </div>
-              </div>
-              <figure class="image">
-                <img src="static/images/app-qa-examples-clevr.png" style="max-width:100%; height:auto;">
-              </figure>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="container is-max-desktop">
-      <div class="columns is-centered has-text-centered">
-        <div class="column is-full-width">
-          <hr>
-          <h2 id="interactive-rendering-demos" class="title is-3">Interactive Rendering Demos</h2>
-          <div class="content has-text-justified">
-            <p>
-              Below is a JSON panel with exactly <b>3 objects</b>. Each object has a fixed <code>xy-coords</code>, but
-              you can change its
-              <code>shape</code> to <code>balloon</code>, <code>barrel</code>, <code>vase</code>, <code>bottle</code>,
-              or <code>basketball</code>.
-              Click <b>"Generate"</b> to retrieve a corresponding pre-computed ObjaWorld image.
+              Existing segmentation benchmarks are heavily skewed toward simple entities and spatial relations.
+              To measure progress in grounding abstract concepts, we introduce <b>ConvSeg</b>, a benchmark featuring
+              balanced coverage across five concept families: <i>Entities, Spatial & Layout, Relations & Events,
+                Affordances & Functions,</i> and <i>Physics & Safety</i>.
             </p>
           </div>
-        </div>
-      </div>
 
-      <!-- ======================= NEW ObjaWorld Interactive Demo ======================= -->
-      <!-- Insert this block **right before** the existing <div class="box" id="interactive-demo"> -->
-      <div class="box" id="interactive-demo-objaworld" style="margin-top: 2rem;">
-        <div class="columns">
-          <!-- ───────── Left Column: Editable Scene Objects ───────── -->
-          <div class="column is-half has-text-left" style="border-right: 1px solid #ddd;">
-            <h3 class="title is-4 has-text-centered">ObjaWorld Scene Objects</h3>
-
-            <!-- Helper for building the <pre> rows -->
-            <script>
-              /**
-               * Inject one object‑row. Keeps the HTML shorter and avoids unmatched quotes inside <pre>.
-               * @param {number} index 0‑based index of the object.
-               * @param {string} xyCoords Frozen coordinate string (already wrapped in parentheses)
-               */
-              function addObjaworldRow(index, xyCoords) {
-                const container = document.createElement('div');
-                container.className = 'box object-row objaworld-object';
-                container.style.cssText = 'margin-bottom:0.75rem;padding:0.75rem;';
-                container.setAttribute('data-xy', xyCoords);
-
-                // Build the inner HTML – no extra quotes around <select> so the DOM stays valid
-                container.innerHTML = `
-<pre style="font-family: monospace; white-space: pre; margin: 0; font-size: 1.2rem;">
-<span style="color:#999;">{</span>
-    <span style="color:#2b6cb0;">"shape"</span>: <select class="objaworld-shape param-shape" data-index="${index}" style="border:none;background:transparent;outline:none;font-size:1.2rem;color: #c53030;">
-      <option value="balloon">balloon</option>
-      <option value="barrel">barrel</option>
-      <option value="vase">vase</option>
-      <option value="bottle">bottle</option>
-      <option value="basketball">basketball</option>
-    </select>,
-    <span style="color:#2b6cb0;">"xy-coords"</span>: <span style="color:#000;">"${xyCoords}"</span>
-<span style="color:#999;">}</span>
-</pre>`;
-                document.getElementById('objaworld-left-col').appendChild(container);
-              }
-            </script>
-
-            <!-- Wrapper where rows will be injected -->
-            <div id="objaworld-left-col"></div>
-
-            <!-- Generate Button (centered) -->
-            <div class="field has-text-centered" style="margin-top: 1rem;">
-              <p class="control" style="display:inline-block;">
-                <button id="objaworld-generate-btn" class="button is-primary">
-                  <span class="icon"><i class="fas fa-magic"></i></span>
-                  <span>Generate</span>
-                </button>
-              </p>
-            </div>
-
-            <script>
-              // Add the three object rows (coordinates frozen)
-              addObjaworldRow(0, '(-1.90,-2.45)');
-              addObjaworldRow(1, '(-1.55,1.00)');
-              addObjaworldRow(2, '(2.75,0.30)');
-            </script>
+          <!-- ADDED: Hugging Face Link Button -->
+          <div class="has-text-centered mt-4 mb-4">
+            <a href="#" class="button is-rounded is-dark">
+              <span class="icon" style="font-size: 1.2rem;">🤗</span>
+              <span>Download Benchmark</span>
+            </a>
           </div>
 
-          <!-- ───────── Right Column: Generated Image Only ───────── -->
-          <div class="column is-half is-flex is-flex-direction-column is-align-items-center is-justify-content-center">
-            <h3 class="title is-4 has-text-centered">Generated Image (Kyvo)</h3>
-            <div style="border: 1px solid #ddd; border-radius: 6px; padding: 0rem; max-width: 85%; width:100%;">
-              <figure class="image is-square is-flex is-align-items-center is-justify-content-center"
-                style="background:#f5f5f5; position:relative; height:100%;">
-                <img id="objaworld-generated-img" src="static/images/kyvo.png" alt="Generated Output"
-                  style="display:block; max-width:100%; height:auto; margin:auto;">
-                <!-- Spinner -->
-                <div id="objaworld-loading-indicator"
-                  style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);">
-                  <span class="icon is-large"><i class="fas fa-spinner fa-pulse fa-3x"></i></span>
-                </div>
-              </figure>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="columns is-centered has-text-centered">
-        <div class="column is-full-width">
-          <div class="content has-text-justified">
-            <p>
-              Below is a JSON panel with exactly <b>3 objects</b>. The first and third are <b>read-only</b>, and you can
-              only modify the <b>middle object</b>. Choose <code>shape</code>, <code>material</code>,
-              <code>color</code>, and <code>size</code> for the second object. The <code>3d-coords</code> are fixed.
-              Click <b>"Generate"</b> to retrieve a corresponding precomputed image.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div class="box" id="interactive-demo" style="margin-top: 2rem;">
-        <div class="columns">
-          <!-- Left Column: The 3 Objects -->
-          <div class="column is-half has-text-centered" style="border-right: 1px solid #ddd;">
-            <h3 class="title is-4">Scene Objects (Modify the middle one)</h3>
-
-            <!-- Static Object #1 -->
-            <div class="box object-row static-object" data-shape="cube" data-material="metal" data-color="yellow"
-              data-size="large" style="margin-bottom: 0.75rem; padding: 0.75rem;">
-              <pre style="font-family: monospace; white-space: pre; margin: 0; font-size: 1.2rem;">
-<span style="color: #999;">{</span>
-    <span style="color: #2b6cb0;">"shape"</span>: <span style="color: #000000;">"sphere"</span>,
-    <span style="color: #2b6cb0;">"material"</span>: <span style="color: #000000;">"metal"</span>,
-    <span style="color: #2b6cb0;">"color"</span>: <span style="color: #000000;">"red"</span>,
-    <span style="color: #2b6cb0;">"size"</span>: <span style="color: #000000;">"large"</span>,
-    <span style="color: #2b6cb0;">"xy-coords"</span>: <span style="color: #000000;">"(-1.60,-2.20)"</span>
-<span style="color: #999;">}</span>
-</pre>
-            </div>
-
-            <!-- Dynamic Object #2 (modifiable) -->
-            <div class="box object-row dynamic-object"
-              style="margin-bottom: 0.75rem; padding: 0.75rem; position: relative;">
-              <pre style="font-family: monospace; white-space: pre; margin: 0; font-size: 1.2rem;">
-<span style="color: #999;">{</span>
-    <span style="color: #2b6cb0;">"shape"</span>: <span style="color: #c53030;">"<select class="param-shape" style="display: inline; color: #c53030; border: none; background: transparent; outline: none; font-size: 1.2rem; text-align-last: center;">
-      <option value="sphere">sphere</option>
-      <option value="cube">cube</option>
-      <option value="cylinder">cylinder</option>
-    </select>"</span>,
-    <span style="color: #2b6cb0;">"material"</span>: <span style="color: #c53030;">"<select class="param-material" style="display: inline; color: #c53030; border: none; background: transparent; outline: none; font-size: 1.2rem; text-align-last: center;">
-      <option value="metal">metal</option>
-      <option value="rubber">rubber</option>
-    </select>"</span>,
-    <span style="color: #2b6cb0;">"color"</span>: <span style="color: #c53030;">"<select class="param-color" style="display: inline; color: #c53030; border: none; background: transparent; outline: none; font-size: 1.2rem; text-align-last: center;">
-      <option value="red">red</option>
-      <option value="blue">blue</option>
-      <option value="green">green</option>
-      <option value="purple">purple</option>
-      <option value="yellow">yellow</option>
-      <option value="cyan">cyan</option>
-      <option value="brown">brown</option>
-      <option value="gray">gray</option>
-    </select>"</span>,
-    <span style="color: #2b6cb0;">"size"</span>: <span style="color: #c53030;">"<select class="param-size" style="display: inline; color: #c53030; border: none; background: transparent; outline: none; font-size: 1.2rem; text-align-last: center;">
-      <option value="small">small</option>
-      <option value="large">large</option>
-    </select>"</span>,
-    <span style="color: #2b6cb0;">"xy-coords"</span>: <span style="color: #c53030;">"(2.40,-2.35)"</span>
-<span style="color: #999;">}</span>
-</pre>
-            </div>
-
-            <!-- Static Object #3 -->
-            <div class="box object-row static-object" data-shape="sphere" data-material="rubber" data-color="blue"
-              data-size="small" style="margin-bottom: 0.75rem; padding: 0.75rem;">
-              <pre style="font-family: monospace; white-space: pre; margin: 0; font-size: 1.2rem;">
-<span style="color: #999;">{</span>
-    <span style="color: #2b6cb0;">"shape"</span>: <span style="color: #000000;">"cylinder"</span>,
-    <span style="color: #2b6cb0;">"material"</span>: <span style="color: #000000;">"rubber"</span>,
-    <span style="color: #2b6cb0;">"color"</span>: <span style="color: #000000;">"yellow"</span>,
-    <span style="color: #2b6cb0;">"size"</span>: <span style="color: #000000;">"large"</span>,
-    <span style="color: #2b6cb0;">"xy-coords"</span>: <span style="color: #000000;">"(2.75,0.35)"</span>
-<span style="color: #999;">}</span>
-</pre>
-            </div>
-
-            <!-- Generate Button -->
-            <div class="field has-text-centered" style="margin-top: 1rem;">
-              <p class="control">
-                <button id="generate-btn" class="button is-primary">
-                  <span class="icon"><i class="fas fa-magic"></i></span>
-                  <span>Generate</span>
-                </button>
-              </p>
-            </div>
-          </div>
-
-          <!-- Right Column: Generated & Groundtruth Images -->
-          <div class="column is-half">
-            <h3 class="title is-4 has-text-centered">Generated Image (Kyvo)</h3>
-            <div style="border: 1px solid #ddd; border-radius: 6px; padding: 0rem; max-width: 85%; margin: auto;">
-              <figure class="image is-square is-flex is-align-items-center is-justify-content-center"
-                style="background: #f5f5f5; position: relative;">
-                <!-- center default image -->
-                <img id="generated-img" src="static/images/kyvo.png" alt="Generated Output"
-                  style="display:block; max-width:100%; height:auto; margin: auto;">
-                <!-- Spinner (hidden by default) -->
-                <div id="loading-indicator" style="
-                    display: none;
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                  ">
-                  <span class="icon is-large">
-                    <i class="fas fa-spinner fa-pulse fa-3x"></i>
-                  </span>
-                </div>
-              </figure>
-            </div>
-
-            <h3 class="title is-4 has-text-centered">Groundtruth Image (Blender)</h3>
-            <div style="border: 1px solid #ddd; border-radius: 6px; padding: 0rem; max-width: 85%; margin: auto;">
-              <figure class="image is-square is-flex is-align-items-center is-justify-content-center"
-                style="background: #f5f5f5; position: relative;">
-                <img id="groundtruth-img" src="static/images/kyvo.png" alt="Groundtruth Output"
-                  style="display:block; max-width:100%; height:auto; margin: auto;">
-              </figure>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="container is-max-desktop">
-      <h2 class="title is-3">Varying the X-coordinate (Rolling Ball Demo)</h2>
-      <div class="content has-text-justified">
-        <p>
-          Below is another interactive demo that lets you vary the <b>x</b>-coordinate from <code>-3.00</code> to
-          <code>+3.00</code> in steps of <code>0.05</code>. For each x value, we display a pair of images:
-          <b>generated</b> vs. <b>groundtruth</b>.
-        </p>
-      </div>
-
-      <!-- Slider control -->
-      <div class="field has-text-centered">
-        <label class="label" style="text-align: center;">X-coordinate value:</label>
-        <div class="control" style="display: inline-block;">
-          <input id="x-slider" class="slider" step="0.05" min="-3.00" max="3.00" value="0.00" type="range"
-            style="vertical-align: middle; width: 100%;">
-          <output id="x-slider-value" style="display: inline-block; margin-left: 0.5rem; vertical-align: middle;">
-            0.00
-          </output>
-        </div>
-      </div>
-
-      <!-- Images side by side -->
-      <div class="columns">
-        <div class="column is-half">
-          <h3 class="title is-4 has-text-centered">Generated Image (Kyvo)</h3>
-          <figure class="image is-square is-flex is-align-items-center is-justify-content-center"
-            style="background: #f5f5f5;">
-            <img id="x-generated-img" src="GENERATED/generated_0.00-sphere-metal-gray-small.png" alt="Generated Output"
-              style="max-width:100%; height:auto;">
-          </figure>
-        </div>
-        <div class="column is-half">
-          <h3 class="title is-4 has-text-centered">Groundtruth Image (Blender)</h3>
-          <figure class="image is-square is-flex is-align-items-center is-justify-content-center"
-            style="background: #f5f5f5;">
-            <img id="x-groundtruth-img" src="BLENDER-GROUNDTRUTH/0.00-sphere-metal-gray-small.png"
-              alt="Groundtruth Output" style="max-width:100%; height:auto;">
+          <figure class="image" style="margin-top: 2rem; margin-bottom: 2rem;">
+            <!-- Added margin-left: auto; margin-right: auto; to center the block image -->
+            <img src="./static/images/concept-coverage.png" alt="Concept Coverage in Benchmarks"
+              style="max-width: 80%; margin-left: auto; margin-right: auto; display: block;">
+            <figcaption class="mt-2">
+              Distribution of concepts across existing benchmarks versus <b>ConvSeg</b>.
+              Prior datasets primarily focus on entities/spatial relations, whereas ConvSeg offers near-uniform
+              coverage.
+            </figcaption>
           </figure>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ====================================================== -->
-  <!-- 📝  Beautified BibTeX Section                          -->
-  <!-- ====================================================== -->
+  <!-- ===================== NEW SECTION: DATA ENGINE ===================== -->
+  <section class="section" style="background-color:#ffffff;">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">The Conversational Data Engine</h2>
+          <div class="content has-text-justified">
+            <p>
+              Collecting pixel-accurate masks and realistic, reasoning-rich prompts at scale is prohibitively expensive
+              with human annotators.
+              We introduce a fully automated, VLM-driven data engine that synthesizes high-quality prompt–mask pairs
+              without human supervision.
+              By leveraging high-performing VLMs (like Gemini-2.5-Flash) in an iterative generate-and-verify loop, we
+              scale training data diversity
+              across five key reasoning concepts.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Video Section: Spans full width, no floating box -->
+      <div class="columns is-centered has-text-centered mt-4">
+        <div class="column is-full">
+          <video poster="" autoplay controls muted loop playsinline width="100%" style="border-radius: 10px;">
+            <source src="./static/videos/dataengine-video.mov" type="video/mp4">
+          </video>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== NEW SECTION: MODEL ARCHITECTURE ===================== -->
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Model Architecture & Training</h2>
+          <div class="content has-text-justified">
+            <p>
+              <b>ConvSeg-Net</b> is a single-pass model that grounds conversational concepts into pixels. It avoids
+              complex, multi-turn tool-use workflows, favoring an end-to-end approach.
+              We fuse <b>SAM2</b> (for strong segmentation priors) with a <b>Qwen2.5-VL-3B</b> prompt encoder (for
+              visual reasoning).
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="columns is-centered">
+        <div class="column is-10">
+          <!-- PLACEHOLDER FOR FIGURE 5 -->
+          <figure class="image">
+            <img src="./static/images/model.png" alt="Model Architecture Diagram"
+              style="border-radius: 8px; box-shadow: 0 5px 10px rgb(255, 255, 255);">
+          </figure>
+          <div class="content has-text-justified mt-4">
+            <p>
+              <b>Architecture:</b> The image is processed by SAM2's image encoder. The prompt and image are jointly
+              processed by the Qwen2.5-VL vision-language backbone to produce text embeddings.
+              Lightweight adapters project these embeddings into the SAM2 mask decoder, where they condition the mask
+              generation via cross-attention.
+            </p>
+            <p>
+              <b>Curriculum Learning:</b> To handle the complexity of abstract reasoning, we employ a two-phase training
+              curriculum:
+            <ol>
+              <li><b>Phase 1: Literal & Basic Concepts.</b> The model first learns to segment literal concepts and basic
+                referring expressions using standard datasets (COCO, RefCOCO).</li>
+              <li><b>Phase 2: Conversational Concepts.</b> We then train on our generated conversational data to learn
+                abstract reasoning (affordances, physics), while mixing in foundational data to preserve general
+                segmentation capabilities.</li>
+            </ol>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== MODAL ===================== -->
+  <div class="modal-overlay" id="gallery-modal">
+    <div class="modal-content-card">
+      <div class="close-modal" id="modal-close"><i class="fas fa-times"></i></div>
+      <div class="modal-slider-view" id="modal-slider">
+        <img src="" class="compare-img img-original" id="modal-img-orig">
+        <img src="" class="compare-img img-modified" id="modal-img-mask">
+        <span class="label-badge label-mask">ConvSeg Output</span>
+        <span class="label-badge label-original">Original Image</span>
+        <div class="slider-handle" id="modal-handle" style="left: 50%;">
+          <div class="slider-circle"><i class="fas fa-arrows-alt-h"></i></div>
+        </div>
+      </div>
+      <div class="modal-text-container">
+        <h2 class="modal-prompt" id="modal-prompt-text"></h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== BIBTEX ===================== -->
   <section class="section" id="BibTeX">
     <div class="container is-max-desktop">
       <h2 class="title is-3 has-text-left">BibTeX</h2>
-      <div class="box has-background-light" style="position:relative;">
-        <button id="copy-bibtex" class="button is-small is-link is-light"
-          style="position:absolute; top:0.5rem; right:0.5rem;">
-          <span class="icon"><i class="fas fa-copy"></i></span>
-          <span>Copy</span>
-        </button>
-        <pre class="has-text-left" style="margin-top:1.75rem;"><code class="language-bibtex">@misc{sahoo2025aligningtextimages3d,
-  title={Aligning Text, Images, and 3D Structure Token-by-Token}, 
-  author={Aadarsh Sahoo and Vansh Tibrewal and Georgia Gkioxari},
-  year={2025},
-  eprint={2506.08002},
-  archivePrefix={arXiv},
-  primaryClass={cs.CV},
-  url={https://arxiv.org/abs/2506.08002}, 
+      <div class="box has-background-light">
+        <pre class="has-text-left"><code class="language-bibtex">@article{sahoo2026conversational,
+  title={Conversational Image Segmentation: Grounding Abstract Concepts with Scalable Supervision}, 
+  author={Sahoo, Aadarsh and Gkioxari, Georgia},
+  journal={arXiv preprint},
+  year={2026}
 }</code></pre>
       </div>
     </div>
   </section>
 
-  <div id="modal" class="modal">
-    <div class="modal-background"></div>
-    <div class="modal-content">
-      <div id='plot-loading-div' class="box">
-        Loading...
-      </div>
-      <div id='plot-div'></div>
-    </div>
-    <button class="modal-close is-large" aria-label="close"></button>
-  </div>
-
-  <!-- ======================= JS for the New Demo ======================= -->
+  <!-- ===================== LOGIC ===================== -->
   <script>
-    // Helper to build filename like: "balloon-barrel-basketball.png"
-    function buildObjaworldFilename(shapes) {
-      return shapes.join('-') + '.png';
-    }
+    // ⚠️ DEMO DATA UPDATED: 6 Scenes, 3 Prompts Each ⚠️
+    const DEMO_DATA = [
+      {
+        id: "scene1",
+        thumb: "./static/images-overlaid/demo_1_orig.png",
+        image: "./static/images-overlaid/demo_1_orig.png",
+        prompts: [
+          { text: "Segment the person currently touching their mouth.", type: "Relations & Events", mask_img: "./static/images-overlaid/demo_1_mask_1.png" },
+          { text: "Segment the person wearing visible wrist attire.", type: "Entities", mask_img: "./static/images-overlaid/demo_1_mask_2.png" },
+          { text: "Segment the most appropriate object for wiping up spilled liquid.", type: "Affordances & Functions", mask_img: "./static/images-overlaid/demo_1_mask_3.png" }
+        ]
+      },
+      {
+        id: "scene2",
+        thumb: "./static/images-overlaid/demo_2_orig.png",
+        image: "./static/images-overlaid/demo_2_orig.png",
+        prompts: [
+          { text: "Identify vertical surfaces where attached items could fall.", type: "Physics & Safety", mask_img: "./static/images-overlaid/demo_2_mask_1.png" },
+          { text: "Identify a surface currently supporting collaborative group activity.", type: "Affordances & Functions", mask_img: "./static/images-overlaid/demo_2_mask_2.png" },
+          { text: "Segment the people wearing head coverings.", type: "Entities", mask_img: "./static/images-overlaid/demo_2_mask_3.png" }
+        ]
+      },
+      {
+        id: "scene3",
+        thumb: "./static/images-overlaid/demo_3_orig.png",
+        image: "./static/images-overlaid/demo_3_orig.png",
+        prompts: [
+          { text: "Segment luggage objects currently in motion.", type: "Affordances & Functions", mask_img: "./static/images-overlaid/demo_3_mask_1.png" },
+          { text: "Segment the person actively lifting heavy weight.", type: "Entities", mask_img: "./static/images-overlaid/demo_3_mask_2.png" },
+          { text: "Segment wheeled equipment prone to rolling if unsecured.", type: "Physics & Safety", mask_img: "./static/images-overlaid/demo_3_mask_3.png" }
+        ]
+      },
+      // NEW SCENES 4-6 (Placeholders)
+      {
+        id: "scene4",
+        thumb: "./static/images-overlaid/demo_4_orig.png",
+        image: "./static/images-overlaid/demo_4_orig.png",
+        prompts: [
+          { text: "Identify the region showing rapid external movement.", type: "Affordances & Functions", mask_img: "./static/images-overlaid/demo_4_mask_1.png" },
+          { text: "Segment an object usable as a temporary straight edge.", type: "Affordances & Functions", mask_img: "./static/images-overlaid/demo_4_mask_2.png" },
+          { text: "Segment the objects actively held by the person.", type: "Spatial & Layout", mask_img: "./static/images-overlaid/demo_4_mask_3.png" }
+        ]
+      },
+      {
+        id: "scene5",
+        thumb: "./static/images-overlaid/demo_5_orig.png",
+        image: "./static/images-overlaid/demo_5_orig.png",
+        prompts: [
+          { text: "Segment the guineafowl with its head lowered for foraging.", type: "Entities", mask_img: "./static/images-overlaid/demo_5_mask_1.png" },
+          { text: "Segment the two guineafowl standing closest together.", type: "Entities", mask_img: "./static/images-overlaid/demo_5_mask_2.png" },
+          { text: "Segment the bird currently engaged in foraging.", type: "Affordances & Functions", mask_img: "./static/images-overlaid/demo_5_mask_3.png" }
+        ]
+      },
+      {
+        id: "scene6",
+        thumb: "./static/images-overlaid/demo_6_orig.png",
+        image: "./static/images-overlaid/demo_6_orig.png",
+        prompts: [
+          { text: "Identify surfaces unsafe for unroped traversing.", type: "Affordances & Functions", mask_img: "./static/images-overlaid/demo_6_mask_1.png" },
+          { text: "Segment the snow surface defined by dense, parallel tracks.", type: "Entities", mask_img: "./static/images-overlaid/demo_6_mask_2.png" },
+          { text: "Segment the evidence of recent downhill movement.", type: "Relations & Functions", mask_img: "./static/images-overlaid/demo_6_mask_3.png" }
+        ]
+      }
+    ];
 
     $(document).ready(function () {
-      $('#objaworld-generate-btn').click(function (e) {
-        e.preventDefault();
-        // Collect shapes from the three dropdowns in order
-        const shapes = $('.objaworld-shape').map(function () { return $(this).val(); }).get();
 
-        const fileName = buildObjaworldFilename(shapes);
-        // Use the same folder hierarchy as the existing demos (adjust if your assets live elsewhere)
-        const generatedPath = `./static/objaworld-demo-images/${fileName}`;
+      // HELPER: Check label collision
+      // Hides labels if the slider (at p%) overlaps them
+      const checkLabels = ($container, p) => {
+        const w = $container.width();
+        const sliderX = (p / 100) * w;
 
-        // Spinner logic
-        $('#objaworld-generated-img').hide();
-        $('#objaworld-loading-indicator').show();
+        // Left Label
+        const $lblLeft = $container.find('.label-mask');
+        const leftW = $lblLeft.outerWidth();
+        const leftStart = 15; // Left margin
+        const leftEnd = 15 + leftW;
 
-        // Small delay so the spinner is visible; replace with real image‑loading callback if desired
-        setTimeout(() => {
-          $('#objaworld-loading-indicator').hide();
-          $('#objaworld-generated-img').attr('src', generatedPath).show();
-        }, 500);
-      });
-    });
-  </script>
+        // Right Label
+        const $lblRight = $container.find('.label-original');
+        const rightW = $lblRight.outerWidth();
+        const rightStart = w - 15 - rightW; // Right margin is 15
+        const rightEnd = w - 15;
 
-  <!-- JavaScript to handle interactivity -->
-  <script>
-    /**
-     * Build the final image filename from the 3 objects.
-     * e.g. "generated_sphere-metal-red-large__cube-rubber-blue-small__sphere-metal-purple-large.png"
-     */
-    function buildImageFilename(objects) {
-      // For example: "generated_sphere-metal-red-large__cube-rubber-blue-small__sphere-metal-purple-large.png"
-      const parts = objects.map(obj => {
-        return `generated_${obj.shape}-${obj.material}-${obj.color}-${obj.size}`;
-      });
-      return parts.join('__') + '.png';
-    }
+        const buffer = 10; // Extra breathing room
 
-    $(document).ready(function () {
-      // ------------ FIRST DEMO (Generate Button) ------------
-      $('#generate-btn').click(function (e) {
-        e.preventDefault();
+        // Check Left Intersection
+        if (sliderX > (leftStart - buffer) && sliderX < (leftEnd + buffer)) {
+          $lblLeft.css('opacity', '0');
+        } else {
+          $lblLeft.css('opacity', '1');
+        }
 
-        const staticObj1 = {
-          shape: $('.static-object').eq(0).data('shape'),
-          material: $('.static-object').eq(0).data('material'),
-          color: $('.static-object').eq(0).data('color'),
-          size: $('.static-object').eq(0).data('size')
-        };
-        const dynamicObj2 = {
-          shape: $('.dynamic-object .param-shape').val(),
-          material: $('.dynamic-object .param-material').val(),
-          color: $('.dynamic-object .param-color').val(),
-          size: $('.dynamic-object .param-size').val()
-        };
-        const staticObj3 = {
-          shape: $('.static-object').eq(1).data('shape'),
-          material: $('.static-object').eq(1).data('material'),
-          color: $('.static-object').eq(1).data('color'),
-          size: $('.static-object').eq(1).data('size')
-        };
+        // Check Right Intersection
+        if (sliderX > (rightStart - buffer) && sliderX < (rightEnd + buffer)) {
+          $lblRight.css('opacity', '0');
+        } else {
+          $lblRight.css('opacity', '1');
+        }
+      };
 
-        // If you want the final filename to incorporate all 3 objects, do so here:
-        // const objects = [staticObj1, dynamicObj2, staticObj3];
-        // For the example, we’re only using the dynamic object:
-        const objects = [dynamicObj2];
+      // 1. MAIN DEMO
+      const gridContainer = $('#thumbnails-container');
 
-        const fileName = buildImageFilename(objects);
-
-        // Construct the paths:
-        const generatedPath = './static/demo-images/' + fileName;
-        // Example: "generated_sphere-metal-red-large__..." => remove "generated_" if needed
-        const groundtruthPath = './static/demo-images/blender-groundtruth/' +
-          fileName.replace('generated_', '');
-
-        // Show spinner
-        $('#generated-img').hide();
-        $('#groundtruth-img').hide();
-        $('#loading-indicator').show();
-
-        // Simulate a short delay to mimic loading/fetching
-        setTimeout(() => {
-          $('#loading-indicator').hide();
-          $('#generated-img').attr('src', generatedPath).show();
-          $('#groundtruth-img').attr('src', groundtruthPath).show();
-        }, 1500);
+      // Logic for 6 items in grid (CSS grid handles layout)
+      DEMO_DATA.forEach((scene, index) => {
+        const thumbDiv = $(`<div class="cis-thumb ${index === 0 ? 'active' : ''}" data-index="${index}"></div>`);
+        const thumbSrc = scene.thumb.includes('./') ? scene.thumb : scene.thumb;
+        const img = $(`<img src="${thumbSrc}" alt="Scene ${index}">`);
+        img.on('error', function () { $(this).attr('src', `https://via.placeholder.com/150/cccccc/808080?text=Scene+${index + 1}`); });
+        thumbDiv.append(img);
+        gridContainer.append(thumbDiv);
       });
 
-      // ------------ SECOND DEMO (Slider for X-coordinate) ------------
-      function updateSliderImages() {
-        let val = parseFloat($('#x-slider').val()).toFixed(2);
-        // If you need a plus sign for positive:
-        // let signVal = (val >= 0) ? `+${val}` : val;
-        let signVal = val;
+      $('.cis-thumb').click(function () {
+        $('.cis-thumb').removeClass('active');
+        $(this).addClass('active');
+        loadScene($(this).data('index'));
+      });
 
-        $('#x-slider-value').text(val);
+      $('#prompt-select').change(function () { updateMainMask($(this).val()); });
 
-        let generatedPath = `./static/x-axis-demo-images/GENERATED/generated_${signVal}-sphere-metal-gray-small.png`;
-        let groundPath = `./static/x-axis-demo-images/BLENDER-GROUNDTRUTH/${signVal}-sphere-metal-gray-small.png`;
-
-        $('#x-generated-img').attr('src', generatedPath);
-        $('#x-groundtruth-img').attr('src', groundPath);
+      let currentSceneData = DEMO_DATA[0];
+      function loadScene(index) {
+        currentSceneData = DEMO_DATA[index];
+        const promptSelect = $('#prompt-select');
+        promptSelect.empty();
+        // Dynamically fill prompts (will be 3 for every scene now)
+        currentSceneData.prompts.forEach((p, i) => { promptSelect.append(`<option value="${i}">${p.text}</option>`); });
+        $('#img-original').attr('src', currentSceneData.image)
+          .off('error').on('error', function () { $(this).attr('src', 'https://via.placeholder.com/800x600/e0e0e0/999999?text=Original+Image'); });
+        updateMainMask(0);
       }
 
-      $('#x-slider').on('input', updateSliderImages);
-      updateSliderImages(); // call once on page load
-    });
-  </script>
+      function updateMainMask(idx) {
+        const p = currentSceneData.prompts[idx];
+        $('#demo-loader').show();
+        $('#prompt-desc-tag').text(p.type);
+        $('#img-modified').attr('src', p.mask_img)
+          .off('load error')
+          .on('load', function () { $('#demo-loader').fadeOut(200); })
+          .on('error', function () { $(this).attr('src', 'https://via.placeholder.com/800x600/3273dc/ffffff?text=Mask'); $('#demo-loader').fadeOut(200); });
+      }
 
-  <script>
-    $(function () {
-      const $logo = $('.kyvo-logo-fly');
-      $logo.attr('title', 'Click me!');
+      const mainContainer = $('#comparison-container');
+      const mainHandle = $('#slider-handle');
+      const mainImgMod = $('#img-modified');
+      let isDraggingMain = false;
 
-      $logo.on('click', function () {
-        const $el = $(this);
-        // Restart animation if already mid‑pop
-        if ($el.hasClass('clicked')) {
-          $el.removeClass('clicked');
-          void this.offsetWidth; // Force reflow
-        }
-        $el.addClass('clicked');
-        // Remove again so flight resumes
-        setTimeout(() => $el.removeClass('clicked'), 650);
+      mainContainer.on('mousedown touchstart', (e) => { isDraggingMain = true; e.preventDefault(); });
+      $(window).on('mouseup touchend', () => { isDraggingMain = false; });
+      mainContainer.on('mousemove touchmove', (e) => {
+        if (!isDraggingMain) return;
+        const rect = mainContainer[0].getBoundingClientRect();
+        let x = (e.clientX || e.originalEvent.touches[0].clientX) - rect.left;
+        let p = Math.max(0, Math.min(100, (x / rect.width) * 100));
+
+        // Update visuals
+        mainHandle.css('left', p + '%');
+        mainImgMod.css('clip-path', `polygon(0 0, ${p}% 0, ${p}% 100%, 0 100%)`);
+
+        // Check Label Overlap
+        checkLabels(mainContainer, p);
       });
-    });
-  </script>
 
-  <!-- Copy‑to‑clipboard helper for BibTeX -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const btn = document.getElementById('copy-bibtex');
-      if (!btn) return;
-      btn.addEventListener('click', () => {
-        const bib = `@article{sahoo2023autoregressive,\n  title={Aligning Text, Images, and 3D Structure Token-by-Token},\n  author={Sahoo, Aadarsh and Gkioxari, Georgia},\n  journal={arXiv preprint arXiv:XXXX.XXXXX},\n  year={2023}\n}`;
-        navigator.clipboard.writeText(bib).then(() => {
-          btn.classList.remove('is-link');
-          btn.classList.add('is-success');
-          btn.querySelector('span:last-child').textContent = 'Copied!';
-          setTimeout(() => {
-            btn.classList.remove('is-success');
-            btn.classList.add('is-link');
-            btn.querySelector('span:last-child').textContent = 'Copy';
-          }, 2000);
+      loadScene(0);
+
+
+      // 2. GALLERY MINI SLIDERS
+      let isTouchSwiping = false; // specific flag for mobile drag
+
+      $('.mini-slider-container').each(function () {
+        const $this = $(this);
+        const $handle = $this.find('.mini-handle');
+        const $mask = $this.find('.img-mask');
+
+        $this.find('img').on('error', function () {
+          if ($(this).hasClass('img-orig')) $(this).attr('src', 'https://via.placeholder.com/600x450/e0e0e0/999999?text=Image');
+          else $(this).attr('src', 'https://via.placeholder.com/600x450/3273dc/ffffff?text=Mask');
+        });
+
+        // Mobile Drag
+        $this.on('touchstart', function () { isTouchSwiping = false; });
+        $this.on('touchmove', function (e) {
+          isTouchSwiping = true;
+          e.preventDefault(); // Stop page scroll
+          const rect = this.getBoundingClientRect();
+          let x = e.originalEvent.touches[0].clientX - rect.left;
+          let p = Math.max(0, Math.min(100, (x / rect.width) * 100));
+          $handle.css('left', p + '%');
+          $mask.css('clip-path', `polygon(0 0, ${p}% 0, ${p}% 100%, 0 100%)`);
+        });
+
+        // Desktop Hover (Does NOT set drag flag)
+        $this.on('mousemove', function (e) {
+          const rect = this.getBoundingClientRect();
+          let x = e.clientX - rect.left;
+          let p = Math.max(0, Math.min(100, (x / rect.width) * 100));
+          $handle.css('left', p + '%');
+          $mask.css('clip-path', `polygon(0 0, ${p}% 0, ${p}% 100%, 0 100%)`);
+        });
+
+        $this.on('mouseleave', function () {
+          $handle.animate({ left: '50%' }, { duration: 300, step: function (n) { $mask.css('clip-path', `polygon(0 0, ${n}% 0, ${n}% 100%, 0 100%)`); } });
         });
       });
+
+
+      // 3. POP-OUT MODAL
+      const $modal = $('#gallery-modal');
+
+      // Click event on the Card
+      $(document).on('click', '.result-card', function (e) {
+        // On mobile, if user was swiping slider, don't open
+        if (isTouchSwiping) { isTouchSwiping = false; return; }
+
+        // --- FIX START ---
+        // Instead of relying on data-orig (which might be wrong), 
+        // we grab the source directly from the images visible in the card.
+        const origSrc = $(this).find('.img-orig').attr('src');
+        const maskSrc = $(this).find('.img-mask').attr('src');
+        const promptText = $(this).data('prompt');
+        // --- FIX END ---
+
+        $('#modal-img-orig').attr('src', origSrc);
+        $('#modal-img-mask').attr('src', maskSrc);
+        $('#modal-prompt-text').text('"' + promptText + '"');
+
+        // Reset Modal Slider
+        $('#modal-handle').css('left', '50%');
+        $('#modal-img-mask').css('clip-path', 'polygon(0 0, 50% 0, 50% 100%, 0 100%)');
+
+        // Reset opacity in modal in case they were hidden
+        $('#modal-slider .label-badge').css('opacity', '1');
+
+        $modal.addClass('active');
+        $('html').css('overflow', 'hidden');
+      });
+
+      // Modal Slider
+      let modalIsDragging = false;
+      const $modalSlider = $('#modal-slider');
+
+      $modalSlider.on('mousedown touchstart', function (e) { modalIsDragging = true; e.preventDefault(); });
+      $(window).on('mouseup touchend', function () { modalIsDragging = false; });
+      $modalSlider.on('mousemove touchmove', function (e) {
+        if (!modalIsDragging) return;
+        const rect = this.getBoundingClientRect();
+        let x = (e.clientX || e.originalEvent.touches[0].clientX) - rect.left;
+        let p = Math.max(0, Math.min(100, (x / rect.width) * 100));
+        $('#modal-handle').css('left', p + '%');
+        $('#modal-img-mask').css('clip-path', `polygon(0 0, ${p}% 0, ${p}% 100%, 0 100%)`);
+
+        // Check Label Overlap in Modal
+        checkLabels($modalSlider, p);
+      });
+
+      // ... existing modal slider code ...
+
+      // ────────────────────────────────────────────────────
+      //  ❌ CLOSE MODAL LOGIC (Paste this)
+      // ────────────────────────────────────────────────────
+
+      // 1. Close when clicking the "X" button
+      $('#modal-close').on('click', function () {
+        $modal.removeClass('active');
+        $('html').css('overflow', ''); // Restore scrolling
+      });
+
+      // 2. Close when clicking the dark background overlay
+      $modal.on('click', function (e) {
+        if ($(e.target).is('.modal-overlay')) {
+          $modal.removeClass('active');
+          $('html').css('overflow', '');
+        }
+      });
+
+      // 3. Close when pressing the "Escape" key
+      $(document).on('keydown', function (e) {
+        if (e.key === "Escape" && $modal.hasClass('active')) {
+          $modal.removeClass('active');
+          $('html').css('overflow', '');
+        }
+      });
+
+      // ... end of script ...
+
     });
   </script>
 
